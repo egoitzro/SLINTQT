@@ -1,0 +1,153 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+import { ListView } from "std-widgets.slint";
+import { CuteCheckBox } from "cute_check_box.slint";
+import { CuteComboBox } from "cute_combo_box.slint";
+import { CuteProgressBar } from "cute_progress_bar.slint";
+
+export enum CuteDelegateType {
+    Text,
+    CheckBox,
+    ComboBox,
+    ProgressBar,
+}
+
+export struct CuteTableColumn {
+    title: string,
+    width: length,
+}
+
+export struct CuteTableItem {
+    delegate_type: CuteDelegateType,
+    text: string,
+    combo_options: [string],
+    combo_selected_index: int,
+    checked: bool,
+    progress: float,
+}
+
+export struct CuteTableRowData {
+    cells: [CuteTableItem],
+    is_selected: bool,
+}
+
+export component CuteTable {
+    in property <[CuteTableColumn]> columns;
+    in property <[CuteTableRowData]> row_data;
+    
+    // Señales emulando QTableView
+    callback row_clicked(int, CuteTableRowData);
+    callback row_right_clicked(int, CuteTableRowData);
+    callback column_resized(int, length);
+    
+    // Señales de delegados
+    callback delegate_toggled(int, int, bool);
+    callback delegate_combo_changed(int, int, int, string);
+
+    min-width: 300px;
+    min-height: 200px;
+
+    Rectangle {
+        border-color: ThemeEngine.button_border;
+        border-width: 1px;
+        border-radius: ThemeEngine.button_radius;
+        background: ThemeEngine.window_background;
+
+        VerticalLayout {
+            // Cabeceras (Headers) dinámicas
+            Rectangle {
+                height: 32px;
+                background: ThemeEngine.button_bg;
+                
+                HorizontalLayout {
+                    for col[idx] in root.columns: Rectangle {
+                        width: idx == root.columns.length - 1 ? 0px : col.width;
+                        horizontal-stretch: idx == root.columns.length - 1 ? 1 : 0;
+                        clip: true;
+                        border-width: 1px;
+                        border-color: ThemeEngine.button_border;
+                        
+                        Text {
+                            text: col.title;
+                            font-weight: 600;
+                            color: ThemeEngine.text_color;
+                            vertical-alignment: center;
+                            horizontal-alignment: center;
+                            font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+                        }
+                        
+                        if idx < root.columns.length - 1: TouchArea {
+                            x: parent.width - 4px;
+                            width: 8px;
+                            mouse-cursor: ew-resize;
+                            moved => {
+                                root.column_resized(idx, col.width + (self.mouse-x - self.pressed-x));
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Cuerpo de la tabla genérico
+            ListView {
+                for row[row_idx] in root.row_data: Rectangle {
+                    height: 28px;
+                    background: row.is_selected ? 
+                                (ThemeEngine.current_theme == PlatformTheme.MacOS ? #0063E1 : #0078D7) : 
+                                (touch.has-hover ? ThemeEngine.button_hover_bg : 
+                                (Math.mod(row_idx, 2) == 0 ? ThemeEngine.window_background : ThemeEngine.button_bg));
+
+                    HorizontalLayout {
+                        for col[col_idx] in root.columns: Rectangle {
+                            preferred-width: col_idx == root.columns.length - 1 ? 1000px : col.width;
+                            horizontal-stretch: col_idx == root.columns.length - 1 ? 1 : 0;
+                            clip: true;
+                            
+                            HorizontalLayout {
+                                padding-left: 8px;
+                                padding-right: 8px;
+                                // Iterar celdas protegiendo contra out-of-bounds
+                                if col_idx < row.cells.length: Rectangle {
+                                    if row.cells[col_idx].delegate_type == CuteDelegateType.Text : Text { 
+                                        text: row.cells[col_idx].text; 
+                                        color: row.is_selected ? #FFFFFF : ThemeEngine.text_color;
+                                        vertical-alignment: center; 
+                                        overflow: elide;
+                                    }
+                                    if row.cells[col_idx].delegate_type == CuteDelegateType.CheckBox : CuteCheckBox {
+                                        text: row.cells[col_idx].text;
+                                        checked: row.cells[col_idx].checked;
+                                        toggled(val) => {
+                                            root.delegate_toggled(row_idx, col_idx, val);
+                                        }
+                                    }
+                                    if row.cells[col_idx].delegate_type == CuteDelegateType.ComboBox : CuteComboBox {
+                                        model: row.cells[col_idx].combo_options;
+                                        current_index: row.cells[col_idx].combo_selected_index;
+                                        selected(idx, val) => {
+                                            root.delegate_combo_changed(row_idx, col_idx, idx, val);
+                                        }
+                                    }
+                                    if row.cells[col_idx].delegate_type == CuteDelegateType.ProgressBar : CuteProgressBar {
+                                        progress: row.cells[col_idx].progress;
+                                        text: row.cells[col_idx].text;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    touch := TouchArea {
+                        clicked => {
+                            root.row_clicked(row_idx, row);
+                        }
+                        pointer-event(event) => {
+                            if (event.button == PointerEventButton.right && event.kind == PointerEventKind.down) {
+                                root.row_right_clicked(row_idx, row);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

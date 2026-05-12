@@ -1,0 +1,123 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export component CuteDockWidget inherits Rectangle {
+    in property <string> title: "Dock Panel";
+    in property <bool> is_closable: true;
+    in property <bool> is_floatable: true;
+    
+    in-out property <bool> is_floating: false;
+    in-out property <bool> is_docked: true;
+
+    callback close_clicked();
+    callback float_clicked();
+    callback header_dragged(length, length);
+    callback header_drag_started();
+    callback header_drag_ended();
+
+    background: ThemeEngine.surface_color;
+    border-radius: ThemeEngine.layer_radius;
+    border-color: ThemeEngine.border_subtle;
+    border-width: 1px;
+    
+    // Sombra para cuando es flotante
+    drop-shadow-blur: root.is_floating ? 15px : 0px;
+    drop-shadow-color: root.is_floating ? rgba(0,0,0,0.3) : transparent;
+    drop-shadow-offset-y: root.is_floating ? 5px : 0px;
+
+    VerticalLayout {
+        // Cabecera del Dock (TitleBar)
+        Rectangle {
+            height: 28px;
+            background: ThemeEngine.button_bg;
+            border-top-left-radius: ThemeEngine.layer_radius;
+            border-top-right-radius: ThemeEngine.layer_radius;
+            
+            // Drag handler (Área de arrastre) - leave space for buttons on the right!
+            drag_ta := TouchArea {
+                width: parent.width - 60px;
+                height: 100%;
+                x: 0;
+                
+                pointer-event(event) => {
+                    if (event.button == PointerEventButton.left) {
+                        if (event.kind == PointerEventKind.down) {
+                            root.header_drag_started();
+                        } else if (event.kind == PointerEventKind.up) {
+                            root.header_drag_ended();
+                        }
+                    }
+                }
+                moved => {
+                    root.header_dragged(self.mouse-x - self.pressed-x, self.mouse-y - self.pressed-y);
+                }
+            }
+            
+            HorizontalLayout {
+                padding-left: 10px;
+                padding-right: 5px;
+                
+                Text {
+                    text: root.title;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: ThemeEngine.text_color;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+
+                // Botón Float
+                if root.is_floatable: Rectangle {
+                    width: 24px;
+                    height: 24px;
+                    border-radius: ThemeEngine.button_radius;
+                    background: float_ta.pressed ? ThemeEngine.button_pressed_bg : (float_ta.has-hover ? ThemeEngine.button_hover_bg : transparent);
+                    
+                    Text {
+                        text: "\u{e8a0}"; // Icono PopOut
+                        font-family: "Segoe Fluent Icons";
+                        font-size: 10px;
+                        color: ThemeEngine.text_color;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    float_ta := TouchArea {
+                        clicked => { root.float_clicked(); }
+                    }
+                }
+
+                // Botón Close
+                if root.is_closable: Rectangle {
+                    width: 24px;
+                    height: 24px;
+                    border-radius: ThemeEngine.button_radius;
+                    background: close_ta.pressed ? #C42B1C : (close_ta.has-hover ? #E81123 : transparent); // Rojo Windows
+                    
+                    Text {
+                        text: "\u{e711}"; // Icono Close
+                        font-family: "Segoe Fluent Icons";
+                        font-size: 10px;
+                        color: close_ta.has-hover ? white : ThemeEngine.text_color;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    close_ta := TouchArea {
+                        clicked => { root.close_clicked(); }
+                    }
+                }
+            }
+        }
+
+        // Separador
+        Rectangle {
+            height: 1px;
+            background: ThemeEngine.border_subtle;
+        }
+
+        // Área de contenido (Donde se inyectan los widgets hijos)
+        Rectangle {
+            background: transparent;
+            clip: true;
+            @children
+        }
+    }
+}

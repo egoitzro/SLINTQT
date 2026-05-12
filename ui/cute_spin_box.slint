@@ -1,0 +1,82 @@
+import { ThemeEngine } from "cute_theme.slint";
+
+export component CuteSpinBox inherits Rectangle {
+    in-out property <int> value: 0;
+    in property <int> minimum: 0;
+    in property <int> maximum: 100;
+    
+    callback value_changed(int);
+    
+    height: 30px;
+    width: 100px;
+    border-radius: ThemeEngine.button_radius;
+    border-width: 1px;
+    border-color: ThemeEngine.border_subtle;
+    background: ThemeEngine.surface_color;
+    
+    HorizontalLayout {
+        TextInput {
+            text: root.value;
+            color: ThemeEngine.text_color;
+            vertical-alignment: center;
+            horizontal-alignment: center;
+            horizontal-stretch: 1;
+        }
+        
+        Rectangle {
+            width: 1px;
+            background: ThemeEngine.border_subtle;
+        }
+        
+        VerticalLayout {
+            width: 20px;
+            
+            // Botón Arriba
+            Rectangle {
+                background: btn_up.pressed ? ThemeEngine.button_pressed_bg : (btn_up.has-hover ? ThemeEngine.button_hover_bg : transparent);
+                Text {
+                    text: "\u{e70e}"; // ChevronUp
+                    font-family: "Segoe Fluent Icons";
+                    color: ThemeEngine.text_secondary;
+                    font-size: 8px;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
+                }
+                btn_up := TouchArea {
+                    clicked => {
+                        if (root.value < root.maximum) {
+                            root.value += 1;
+                            root.value_changed(root.value);
+                        }
+                    }
+                }
+            }
+            
+            Rectangle {
+                height: 1px;
+                background: ThemeEngine.border_subtle;
+            }
+            
+            // Botón Abajo
+            Rectangle {
+                background: btn_down.pressed ? ThemeEngine.button_pressed_bg : (btn_down.has-hover ? ThemeEngine.button_hover_bg : transparent);
+                Text {
+                    text: "\u{e70d}"; // ChevronDown
+                    font-family: "Segoe Fluent Icons";
+                    color: ThemeEngine.text_secondary;
+                    font-size: 8px;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
+                }
+                btn_down := TouchArea {
+                    clicked => {
+                        if (root.value > root.minimum) {
+                            root.value -= 1;
+                            root.value_changed(root.value);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

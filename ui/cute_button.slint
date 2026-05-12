@@ -1,0 +1,51 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export component CuteButton {
+    in property <string> text: "Button";
+    out property <bool> has_focus;
+    
+    // Qt-like signals
+    callback clicked();
+    callback pressed();
+    callback released();
+
+    min-width: 80px;
+    min-height: 28px;
+
+    rect := Rectangle {
+        border-radius: ThemeEngine.button_radius;
+        border-width: 1px;
+        border-color: ThemeEngine.button_border;
+        background: touch.pressed ? ThemeEngine.button_pressed_bg : 
+                    touch.has-hover ? ThemeEngine.button_hover_bg : 
+                    @linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, ThemeEngine.button_bg 100%);
+
+        // "Mica" like drop shadow on Windows, "Vibrancy" like smooth shadow on Mac
+        drop-shadow-color: ThemeEngine.current_theme == PlatformTheme.MacOS ? #00000020 : #00000010;
+        drop-shadow-offset-y: 1px;
+        drop-shadow-blur: ThemeEngine.current_theme == PlatformTheme.MacOS ? 2px : 1px;
+
+        HorizontalLayout {
+            alignment: center;
+            Text {
+                text: root.text;
+                color: ThemeEngine.text_color;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+                font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+                font-size: 13px;
+            }
+        }
+    }
+
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+        pointer-event(event) => {
+            if (event.kind == PointerEventKind.down) {
+                root.pressed();
+            } else if (event.kind == PointerEventKind.up) {
+                root.released();
+            }
+        }
+    }
+}

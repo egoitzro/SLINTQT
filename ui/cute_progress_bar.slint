@@ -1,0 +1,31 @@
+import { ThemeEngine } from "cute_theme.slint";
+
+export component CuteProgressBar inherits Rectangle {
+    in property <float> progress: 0.0; // 0.0 to 1.0
+    in property <string> text: "";
+    
+    height: 16px;
+    min-width: 100px;
+    background: ThemeEngine.border_subtle;
+    border-radius: 4px;
+    clip: true; 
+    
+    Rectangle {
+        x: 0;
+        y: 0;
+        width: parent.width * root.progress;
+        height: parent.height;
+        background: ThemeEngine.accent_color;
+        border-radius: 4px;
+    }
+    
+    if root.text != "": Text {
+        text: root.text;
+        color: white; 
+        font-size: 11px;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+        width: parent.width;
+        height: parent.height;
+    }
+}

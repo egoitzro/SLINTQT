@@ -1,0 +1,89 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+import { ListView } from "std-widgets.slint";
+
+export struct CuteTreeItem {
+    id: int,
+    text: string,
+    icon: string,
+    level: int,          // Nivel de indentación (0 = Raíz)
+    has_children: bool,  // Mostrar flecha de expansión
+    is_expanded: bool,   // Estado de la flecha
+    is_selected: bool,
+}
+
+export component CuteTreeView inherits Rectangle {
+    in-out property <[CuteTreeItem]> items;
+    
+    // Callbacks que el motor Rust interceptará para manipular el árbol
+    callback item_clicked(int, CuteTreeItem);
+    callback toggle_expanded(int, CuteTreeItem);
+
+    min-width: 250px;
+    min-height: 200px;
+    background: ThemeEngine.window_background;
+    border-color: ThemeEngine.border_subtle;
+    border-width: 1px;
+    border-radius: ThemeEngine.layer_radius;
+
+    ListView {
+        for item[idx] in root.items: TouchArea {
+            height: 28px;
+            
+            clicked => {
+                root.item_clicked(idx, item);
+            }
+
+            Rectangle {
+                background: item.is_selected ? 
+                            (ThemeEngine.current_theme == PlatformTheme.MacOS ? #0063E1 : #0078D7) : 
+                            (parent.has-hover ? ThemeEngine.button_hover_bg : transparent);
+                border-radius: ThemeEngine.button_radius;
+
+                HorizontalLayout {
+                    padding-left: 8px + (item.level * 16px); // Indentación dinámica
+                    spacing: 6px;
+
+                    // Flecha de Expansión
+                    TouchArea {
+                        width: 20px;
+                        height: 100%;
+                        
+                        clicked => {
+                            if (item.has_children) {
+                                root.toggle_expanded(idx, item);
+                            }
+                        }
+
+                        Text {
+                            visible: item.has_children;
+                            text: item.is_expanded ? "\u{E70D}" : "\u{E76C}"; // Iconos Chevron de Windows (Abajo / Derecha)
+                            font-family: "Segoe Fluent Icons";
+                            font-size: 10px;
+                            vertical-alignment: center;
+                            horizontal-alignment: center;
+                            color: item.is_selected ? #FFFFFF : ThemeEngine.text_color;
+                        }
+                    }
+
+                    // Icono del Item (Opcional)
+                    if item.icon != "": Text {
+                        text: item.icon;
+                        font-family: "Segoe Fluent Icons";
+                        font-size: 14px;
+                        vertical-alignment: center;
+                        color: item.is_selected ? #FFFFFF : ThemeEngine.text_color;
+                    }
+
+                    // Texto del Nodo
+                    Text {
+                        text: item.text;
+                        font-size: 13px;
+                        font-weight: 400;
+                        vertical-alignment: center;
+                        color: item.is_selected ? #FFFFFF : ThemeEngine.text_color;
+                    }
+                }
+            }
+        }
+    }
+}

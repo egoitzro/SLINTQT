@@ -1,0 +1,38 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export component CuteGroupBox inherits Rectangle {
+    in property <string> title: "Group Title";
+    
+    background: transparent;
+    border-color: ThemeEngine.border_subtle;
+    border-width: 1px;
+    border-radius: ThemeEngine.layer_radius;
+    
+    // Label Wrapper
+    Rectangle {
+        x: 12px;
+        y: -8px; // Sobrepone la línea del borde
+        height: 16px;
+        width: title_text.preferred-width + 8px;
+        background: ThemeEngine.surface_color; // Tapa el borde
+        
+        title_text := Text {
+            x: 4px;
+            y: 0px;
+            text: root.title;
+            color: ThemeEngine.text_secondary;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+            vertical-alignment: center;
+        }
+    }
+    
+    VerticalLayout {
+        padding-top: 20px;
+        padding-bottom: 16px;
+        padding-left: 16px;
+        padding-right: 16px;
+        @children
+    }
+}

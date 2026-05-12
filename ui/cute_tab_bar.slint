@@ -1,0 +1,58 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export component CuteTabBar inherits Rectangle {
+    in property <[string]> tabs;
+    in-out property <int> active_tab: 0;
+
+    height: 30px;
+    background: ThemeEngine.window_background;
+    
+    // Un pequeño borde inferior que actúa como la base de las pestañas (estilo QTabBar)
+    Rectangle {
+        y: parent.height - 1px;
+        height: 1px;
+        background: ThemeEngine.button_border;
+    }
+
+    HorizontalLayout {
+        alignment: start;
+        padding-left: 10px;
+        spacing: 2px;
+
+        for tab[index] in tabs: Rectangle {
+            width: 130px;
+            
+            // Lógica de colores estilo WinUI 3: La pestaña activa usa el color de superficie
+            background: root.active_tab == index ? ThemeEngine.surface_color : transparent;
+            
+            // Radio de curvatura
+            border-top-left-radius: ThemeEngine.button_radius;
+            border-top-right-radius: ThemeEngine.button_radius;
+
+            // Indicador de acento WinUI 3 (Línea inferior de color de énfasis)
+            Rectangle {
+                visible: root.active_tab == index;
+                y: parent.height - 2px;
+                height: 2px;
+                background: ThemeEngine.accent_color;
+                border-radius: 1px;
+            }
+
+            Text {
+                text: tab;
+                // La pestaña activa tiene fondo claro (surface_color), así que usa texto oscuro (text_color).
+                // Las inactivas están sobre Mica oscuro, así que usan el title_text_color (blanco).
+                color: root.active_tab == index ? ThemeEngine.text_color : ThemeEngine.title_text_color;
+                font-weight: root.active_tab == index ? 600 : 400;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+                font-size: 12px;
+                font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+            }
+
+            TouchArea {
+                clicked => { root.active_tab = index; }
+            }
+        }
+    }
+}

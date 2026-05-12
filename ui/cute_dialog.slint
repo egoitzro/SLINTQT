@@ -1,0 +1,97 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+import { CuteButton } from "cute_button.slint";
+
+export component CuteDialog inherits Rectangle {
+    in property <string> title: "Dialog Title";
+    in property <string> message: "Dialog message goes here.";
+    in property <string> accept_text: "OK";
+    
+    in-out property <bool> is_open: false;
+    
+    callback accepted();
+    callback closed();
+    
+    visible: is_open;
+    
+    // Capa que oscurece el fondo y bloquea los clics a la interfaz de abajo
+    background: rgba(0, 0, 0, 0.4);
+    
+    TouchArea {
+        // Bloquea interacción
+    }
+
+    // La ventana modal en sí
+    dialog_box := Rectangle {
+        width: 350px;
+        height: 180px;
+        background: ThemeEngine.surface_color;
+        border-radius: ThemeEngine.layer_radius;
+        border-width: 1px;
+        border-color: ThemeEngine.border_subtle;
+        
+        // Sombra estilo modal nativo
+        drop-shadow-color: rgba(0, 0, 0, 0.3);
+        drop-shadow-blur: 20px;
+        drop-shadow-offset-y: 8px;
+
+        VerticalLayout {
+            padding: 24px;
+            spacing: 12px;
+            
+            Text {
+                text: root.title;
+                font-size: 18px;
+                font-weight: 600;
+                color: ThemeEngine.text_color;
+                font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+            }
+            
+            Text {
+                text: root.message;
+                font-size: 13px;
+                color: ThemeEngine.text_secondary;
+                wrap: word-wrap;
+                font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+            }
+            
+            Rectangle { vertical-stretch: 1; } // Espaciador flexible
+            
+            HorizontalLayout {
+                alignment: end;
+                CuteButton {
+                    text: root.accept_text;
+                    clicked => {
+                        root.is_open = false;
+                        root.accepted();
+                    }
+                }
+            }
+        }
+        
+        // Botón 'X' de cerrar nativo
+        Rectangle {
+            x: parent.width - 36px;
+            y: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: ThemeEngine.button_radius;
+            background: close_touch.pressed ? rgba(0, 0, 0, 0.1) : (close_touch.has-hover ? rgba(0, 0, 0, 0.05) : transparent);
+            
+            Text {
+                text: "\u{e8bb}"; // ChromeClose
+                font-family: "Segoe Fluent Icons";
+                color: ThemeEngine.text_secondary;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+                font-size: 10px;
+            }
+            
+            close_touch := TouchArea {
+                clicked => {
+                    root.is_open = false;
+                    root.closed();
+                }
+            }
+        }
+    }
+}

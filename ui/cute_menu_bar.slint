@@ -1,0 +1,163 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export component CuteMenuBar inherits Rectangle {
+    height: 30px;
+    background: transparent;
+
+    callback close_app();
+    callback show_about();
+    callback open_file();
+
+    HorizontalLayout {
+        alignment: start;
+        spacing: 2px;
+        padding-left: 10px;
+
+        // --- MENÚ ARCHIVO ---
+        file_menu_btn := Rectangle {
+            width: 60px;
+            border-radius: ThemeEngine.button_radius;
+            // Hover sobre fondo oscuro
+            background: touch_file.pressed ? rgba(255, 255, 255, 0.1) : (touch_file.has-hover ? rgba(255, 255, 255, 0.05) : transparent);
+
+            Text {
+                text: "File";
+                color: ThemeEngine.title_text_color;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+                font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            touch_file := TouchArea {
+                clicked => { file_popup.show(); }
+            }
+
+            file_popup := PopupWindow {
+                x: 0;
+                y: parent.height + 2px;
+                width: 140px;
+
+                Rectangle {
+                    background: ThemeEngine.surface_color; // Acrylic-like surface
+                    border-radius: ThemeEngine.button_radius;
+                    border-color: ThemeEngine.border_subtle;
+                    border-width: 1px;
+                    drop-shadow-color: rgba(0, 0, 0, 0.3);
+                    drop-shadow-blur: 10px;
+                    drop-shadow-offset-y: 4px;
+
+                    VerticalLayout {
+                        padding: 4px;
+                        spacing: 2px;
+
+                        Rectangle {
+                            height: 28px;
+                            border-radius: ThemeEngine.button_radius;
+                            background: open_touch.pressed ? ThemeEngine.button_pressed_bg : (open_touch.has-hover ? ThemeEngine.button_hover_bg : transparent);
+                            
+                            Text {
+                                text: "Open MKV File...";
+                                color: ThemeEngine.text_color;
+                                x: 12px;
+                                vertical-alignment: center;
+                                font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+                                font-size: 13px;
+                            }
+                            
+                            open_touch := TouchArea {
+                                clicked => { root.open_file(); }
+                            }
+                        }
+
+                        Rectangle {
+                            height: 1px;
+                            background: ThemeEngine.border_subtle;
+                        }
+
+                        Rectangle {
+                            height: 28px;
+                            border-radius: ThemeEngine.button_radius;
+                            background: exit_touch.pressed ? ThemeEngine.button_pressed_bg : (exit_touch.has-hover ? ThemeEngine.button_hover_bg : transparent);
+                            
+                            Text {
+                                text: "Exit";
+                                color: ThemeEngine.text_color;
+                                x: 12px;
+                                vertical-alignment: center;
+                                font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+                                font-size: 13px;
+                            }
+                            
+                            exit_touch := TouchArea {
+                                clicked => { root.close_app(); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- MENÚ AYUDA ---
+        help_menu_btn := Rectangle {
+            width: 60px;
+            border-radius: ThemeEngine.button_radius;
+            background: touch_help.pressed ? rgba(255, 255, 255, 0.1) : (touch_help.has-hover ? rgba(255, 255, 255, 0.05) : transparent);
+
+            Text {
+                text: "Help";
+                color: ThemeEngine.title_text_color;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+                font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            touch_help := TouchArea {
+                clicked => { help_popup.show(); }
+            }
+
+            help_popup := PopupWindow {
+                x: 0;
+                y: parent.height + 2px;
+                width: 160px;
+
+                Rectangle {
+                    background: ThemeEngine.surface_color;
+                    border-radius: ThemeEngine.button_radius;
+                    border-color: ThemeEngine.border_subtle;
+                    border-width: 1px;
+                    drop-shadow-color: rgba(0, 0, 0, 0.3);
+                    drop-shadow-blur: 10px;
+                    drop-shadow-offset-y: 4px;
+
+                    VerticalLayout {
+                        padding: 4px;
+                        spacing: 2px;
+
+                        Rectangle {
+                            height: 28px;
+                            border-radius: ThemeEngine.button_radius;
+                            background: about_touch.pressed ? ThemeEngine.button_pressed_bg : (about_touch.has-hover ? ThemeEngine.button_hover_bg : transparent);
+                            
+                            Text {
+                                text: "About Slint-qt...";
+                                color: ThemeEngine.text_color;
+                                x: 12px;
+                                vertical-alignment: center;
+                                font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+                                font-size: 13px;
+                            }
+                            
+                            about_touch := TouchArea {
+                                clicked => { root.show_about(); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

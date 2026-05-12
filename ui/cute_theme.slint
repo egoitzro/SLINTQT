@@ -1,0 +1,44 @@
+export enum PlatformTheme {
+    Windows,
+    MacOS,
+    LinuxKde,
+    LinuxGnome
+}
+
+export global ThemeEngine {
+    in-out property <PlatformTheme> current_theme: PlatformTheme.Windows;
+
+    in-out property <bool> is_dark: false;
+    out property <color> icon_color: is_dark ? #FFFFFF : #1A1A1A;
+
+    // Colores base dinámicos (Windows 11 Surface Tinting)
+    out property <color> window_background: transparent; // Mica nativo abajo
+    
+    // Superficies de capas (Layer On Acrylic / Mica)
+    out property <color> surface_color: is_dark ? rgba(32, 32, 32, 1.0) : rgba(255, 255, 255, 1.0);
+    out property <color> surface_hover: is_dark ? rgba(48, 48, 48, 1.0) : rgba(255, 255, 255, 1.0);
+    
+    // Tintado de la barra de título (Efecto Camaleón) para resaltar botones blancos
+    out property <color> title_bar_bg: transparent;
+    
+    // Bordes sutiles
+    out property <color> border_subtle: is_dark ? rgba(255, 255, 255, 0.15) : rgba(136, 136, 136, 0.3);
+    
+    // Acento de Windows 11
+    out property <color> accent_color: is_dark ? #4CC2FF : #005FB8;
+    
+    // Controles (Botones)
+    out property <color> button_bg: is_dark ? rgba(255, 255, 255, 0.06) : rgba(243, 243, 243, 0.8);
+    out property <color> button_hover_bg: is_dark ? rgba(255, 255, 255, 0.1) : rgba(234, 234, 234, 0.9);
+    out property <color> button_pressed_bg: is_dark ? rgba(255, 255, 255, 0.04) : rgba(220, 220, 220, 1.0);
+    out property <color> button_border: is_dark ? rgba(255, 255, 255, 0.1) : rgba(0, 0, 0, 0.1);
+    
+    // Tipografía
+    out property <color> text_color: is_dark ? #FFFFFF : #1A1A1A;
+    out property <color> text_secondary: is_dark ? #A0A0A0 : #666666;
+    out property <color> title_text_color: is_dark ? #FFFFFF : #1A1A1A;
+    
+    // Radios de curvatura (Border Radius)
+    out property <length> button_radius: 4px;
+    out property <length> layer_radius: 8px; // Paneles y capas
+}

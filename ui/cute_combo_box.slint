@@ -1,0 +1,76 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export component CuteComboBox inherits Rectangle {
+    in property <[string]> model: ["Option 1", "Option 2"];
+    in-out property <int> current_index: 0;
+    out property <string> current_value: root.model[root.current_index];
+    
+    callback selected(int, string);
+
+    height: 30px;
+    border-radius: ThemeEngine.button_radius;
+    border-width: 1px;
+    border-color: ThemeEngine.border_subtle;
+    background: ta.pressed ? rgba(0,0,0,0.05) : (ta.has-hover ? rgba(0,0,0,0.02) : ThemeEngine.surface_color);
+    
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 10px;
+        Text {
+            text: root.model[root.current_index];
+            color: ThemeEngine.text_color;
+            vertical-alignment: center;
+            horizontal-stretch: 1;
+        }
+        Text {
+            text: "\u{e70d}"; // ChevronDown
+            font-family: "Segoe Fluent Icons";
+            color: ThemeEngine.text_secondary;
+            vertical-alignment: center;
+            font-size: 10px;
+        }
+    }
+    
+    ta := TouchArea {
+        clicked => { popup.show(); }
+    }
+    
+    popup := PopupWindow {
+        x: 0;
+        y: parent.height + 2px;
+        width: parent.width;
+        
+        Rectangle {
+            background: ThemeEngine.surface_color;
+            border-radius: ThemeEngine.layer_radius;
+            border-color: ThemeEngine.border_subtle;
+            border-width: 1px;
+            drop-shadow-blur: 10px;
+            drop-shadow-color: rgba(0,0,0,0.2);
+            drop-shadow-offset-y: 4px;
+            
+            VerticalLayout {
+                padding: 4px;
+                for item[idx] in root.model: Rectangle {
+                    height: 28px;
+                    border-radius: ThemeEngine.button_radius;
+                    background: item_touch.pressed ? ThemeEngine.button_pressed_bg : (item_touch.has-hover ? ThemeEngine.button_hover_bg : transparent);
+                    
+                    Text {
+                        x: 10px;
+                        text: item;
+                        color: ThemeEngine.text_color;
+                        vertical-alignment: center;
+                    }
+                    
+                    item_touch := TouchArea {
+                        clicked => {
+                            root.current_index = idx;
+                            root.selected(idx, item);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

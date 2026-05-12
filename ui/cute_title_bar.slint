@@ -1,0 +1,102 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export component CuteTitleBar inherits Rectangle {
+    in property <string> title: "Application Title";
+    
+    // Qt-like signals
+    callback close_window();
+    callback minimize_window();
+    callback maximize_window();
+    callback start_drag();
+
+    height: 32px;
+    background: ThemeEngine.title_bar_bg;
+    
+    // Esquinas superiores redondeadas para encajar en el borde general
+    border-top-left-radius: ThemeEngine.layer_radius;
+    border-top-right-radius: ThemeEngine.layer_radius; 
+    
+    Rectangle {
+        y: parent.height - 1px;
+        height: 1px;
+        background: ThemeEngine.button_border;
+    }
+
+    HorizontalLayout {
+        // Área de arrastre ocupando todo el espacio restante a la izquierda
+        TouchArea {
+            horizontal-stretch: 1;
+            
+            Text {
+                text: root.title;
+                font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+                font-weight: 600;
+                font-size: 13px;
+                color: ThemeEngine.title_text_color;
+                vertical-alignment: center;
+                height: parent.height;
+                x: 15px; // Margen izquierdo
+            }
+
+            moved => {
+                if (self.pressed) {
+                    root.start_drag();
+                }
+            }
+            double-clicked => {
+                root.maximize_window();
+            }
+        }
+
+        // Controles simulados (Minimize, Maximize, Close) estilo Win11
+        HorizontalLayout {
+            alignment: end;
+            spacing: 0;
+
+            Rectangle {
+                width: 46px;
+                height: 32px;
+                background: min_touch.pressed ? rgba(255, 255, 255, 0.1) : (min_touch.has-hover ? rgba(255, 255, 255, 0.05) : transparent);
+                Text { 
+                    text: "\u{e921}"; 
+                    color: ThemeEngine.title_text_color; 
+                    vertical-alignment: center; 
+                    horizontal-alignment: center; 
+                    font-family: "Segoe Fluent Icons";
+                    font-size: 10px; 
+                }
+                min_touch := TouchArea { clicked => { root.minimize_window(); } }
+            }
+
+            Rectangle {
+                width: 46px;
+                height: 32px;
+                background: max_touch.pressed ? rgba(255, 255, 255, 0.1) : (max_touch.has-hover ? rgba(255, 255, 255, 0.05) : transparent);
+                Text { 
+                    text: "\u{e922}"; 
+                    color: ThemeEngine.title_text_color; 
+                    vertical-alignment: center; 
+                    horizontal-alignment: center; 
+                    font-family: "Segoe Fluent Icons";
+                    font-size: 10px; 
+                }
+                max_touch := TouchArea { clicked => { root.maximize_window(); } }
+            }
+
+            Rectangle {
+                width: 46px;
+                height: 32px;
+                background: close_touch.pressed ? #e81123 : (close_touch.has-hover ? #e81123 : transparent);
+                Text { 
+                    text: "\u{e8bb}"; 
+                    color: close_touch.has-hover ? white : ThemeEngine.title_text_color; 
+                    vertical-alignment: center; 
+                    horizontal-alignment: center; 
+                    font-family: "Segoe Fluent Icons";
+                    font-size: 10px; 
+                }
+                close_touch := TouchArea { clicked => { root.close_window(); } }
+            }
+        }
+    }
+}

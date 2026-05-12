@@ -1,0 +1,37 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export component CuteLineEdit inherits Rectangle {
+    in property <string> placeholder: "";
+    in-out property <string> text <=> input.text;
+    callback accepted(string);
+    callback edited(string);
+
+    height: 30px;
+    border-radius: ThemeEngine.button_radius;
+    border-width: 1px;
+    border-color: input.has-focus ? ThemeEngine.accent_color : ThemeEngine.border_subtle;
+    background: rgba(0, 0, 0, 0.05); // WinUI 3 TextBox fondo inactivo
+    
+    input := TextInput {
+        x: 8px;
+        width: parent.width - 16px;
+        height: parent.height;
+        vertical-alignment: center;
+        color: ThemeEngine.text_color;
+        font-size: 13px;
+        selection-background-color: ThemeEngine.accent_color;
+        
+        accepted => { root.accepted(self.text); }
+        edited => { root.edited(self.text); }
+    }
+    
+    if input.text == "" && !input.has-focus: Text {
+        x: 8px;
+        width: parent.width - 16px;
+        height: parent.height;
+        vertical-alignment: center;
+        color: ThemeEngine.text_secondary;
+        text: root.placeholder;
+        font-size: 13px;
+    }
+}

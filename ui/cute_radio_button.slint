@@ -1,0 +1,51 @@
+import { ThemeEngine } from "cute_theme.slint";
+
+export component CuteRadioButton inherits Rectangle {
+    in property <string> text: "Radio";
+    in-out property <bool> checked: false;
+    callback toggled(bool);
+
+    height: 24px;
+    width: layout.preferred-width;
+    background: transparent;
+    
+    layout := HorizontalLayout {
+        spacing: 8px;
+        alignment: start;
+        
+        Rectangle {
+            width: 18px;
+            height: 18px;
+            y: (parent.height - self.height) / 2;
+            border-radius: 9px;
+            border-width: 1px;
+            border-color: root.checked ? ThemeEngine.accent_color : ThemeEngine.border_subtle;
+            background: root.checked ? ThemeEngine.surface_color : (ta.has-hover ? rgba(0,0,0,0.05) : transparent);
+            
+            if root.checked: Rectangle {
+                width: 10px;
+                height: 10px;
+                x: 4px;
+                y: 4px;
+                border-radius: 5px;
+                background: ThemeEngine.accent_color;
+            }
+        }
+        
+        Text {
+            text: root.text;
+            color: ThemeEngine.text_color;
+            vertical-alignment: center;
+            font-size: 13px;
+        }
+    }
+    
+    ta := TouchArea {
+        clicked => {
+            if !root.checked {
+                root.checked = true;
+                root.toggled(true);
+            }
+        }
+    }
+}

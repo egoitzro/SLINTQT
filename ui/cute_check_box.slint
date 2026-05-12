@@ -1,0 +1,52 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export component CuteCheckBox inherits Rectangle {
+    in property <string> text: "CheckBox";
+    in-out property <bool> checked: false;
+    callback toggled(bool);
+
+    height: 24px;
+    width: layout.preferred-width;
+    background: transparent;
+    
+    layout := HorizontalLayout {
+        spacing: 8px;
+        alignment: start;
+        
+        // Caja interactiva
+        Rectangle {
+            width: 18px;
+            height: 18px;
+            y: (parent.height - self.height) / 2;
+            border-radius: 4px;
+            border-width: root.checked ? 0px : 1px;
+            border-color: ThemeEngine.border_subtle;
+            background: root.checked ? ThemeEngine.accent_color : (ta.has-hover ? rgba(0,0,0,0.05) : transparent);
+            
+            Text {
+                text: "\u{e73e}"; // CheckMark icon in Segoe MDL2
+                font-family: "Segoe Fluent Icons";
+                color: white;
+                font-weight: 700;
+                font-size: 11px;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+                visible: root.checked;
+            }
+        }
+        
+        Text {
+            text: root.text;
+            color: ThemeEngine.text_color;
+            vertical-alignment: center;
+            font-size: 13px;
+        }
+    }
+    
+    ta := TouchArea {
+        clicked => {
+            root.checked = !root.checked;
+            root.toggled(root.checked);
+        }
+    }
+}

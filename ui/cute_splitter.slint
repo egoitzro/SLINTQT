@@ -1,0 +1,40 @@
+import { ThemeEngine } from "cute_theme.slint";
+
+export enum SplitterOrientation {
+    Horizontal,
+    Vertical
+}
+
+export component CuteSplitter {
+    in property <SplitterOrientation> orientation: SplitterOrientation.Horizontal;
+    callback drag_started();
+    callback dragged(length, length);
+    
+    min-width: root.orientation == SplitterOrientation.Horizontal ? 5px : 0px;
+    max-width: root.orientation == SplitterOrientation.Horizontal ? 5px : 10000px;
+    min-height: root.orientation == SplitterOrientation.Vertical ? 5px : 0px;
+    max-height: root.orientation == SplitterOrientation.Vertical ? 5px : 10000px;
+    horizontal-stretch: root.orientation == SplitterOrientation.Vertical ? 1 : 0;
+    vertical-stretch: root.orientation == SplitterOrientation.Horizontal ? 1 : 0;
+    
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: touch.has-hover ? ThemeEngine.accent_color : transparent;
+        animate background { duration: 150ms; }
+        
+        touch := TouchArea {
+            mouse-cursor: root.orientation == SplitterOrientation.Horizontal ? col-resize : row-resize;
+            
+            pointer-event(event) => {
+                if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
+                    root.drag_started();
+                }
+            }
+            
+            moved => {
+                root.dragged(self.mouse-x - self.pressed-x, self.mouse-y - self.pressed-y);
+            }
+        }
+    }
+}

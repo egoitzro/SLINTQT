@@ -1,0 +1,579 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+export { ThemeEngine, PlatformTheme }
+import { CuteButton } from "cute_button.slint";
+import { CuteTable, CuteTableColumn, CuteTableRowData } from "cute_table.slint";
+import { CuteContextMenu, CuteMenuItem } from "cute_context_menu.slint";
+import { CuteTreeView, CuteTreeItem } from "cute_tree.slint";
+import { CuteDockWidget } from "cute_dock_widget.slint";
+import { CuteFloatingWindow } from "cute_floating_window.slint";
+export { CuteFloatingWindow }
+import { CuteSplitter, SplitterOrientation } from "cute_splitter.slint";
+
+import { CuteTitleBar } from "cute_title_bar.slint";
+import { CuteTabBar } from "cute_tab_bar.slint";
+import { CuteMenuBar } from "cute_menu_bar.slint";
+import { CuteDialog } from "cute_dialog.slint";
+import { ListView } from "std-widgets.slint";
+
+import { CuteGroupBox } from "cute_group_box.slint";
+import { CuteCheckBox } from "cute_check_box.slint";
+
+// ---- PROPIEDADES TREE VIEW ----
+export global TreeManager {
+    // Estas callbacks las inyectaremos desde Rust
+    callback tree_item_clicked(int, CuteTreeItem);
+    callback tree_toggle_expanded(int, CuteTreeItem);
+}
+import { CuteLineEdit } from "cute_line_edit.slint";
+import { CuteComboBox } from "cute_combo_box.slint";
+import { CuteRadioButton } from "cute_radio_button.slint";
+import { CuteSlider } from "cute_slider.slint";
+import { CuteProgressBar } from "cute_progress_bar.slint";
+import { CuteSpinBox } from "cute_spin_box.slint";
+
+import { CuteToolBar } from "cute_tool_bar.slint";
+import { CuteToolButton } from "cute_tool_button.slint";
+import { CuteStatusBar } from "cute_status_bar.slint";
+import { CuteTextEdit } from "cute_text_edit.slint";
+
+export component CuteMainWindow inherits Window {
+    title: "Slint-qt Framework Demo";
+    preferred-width: 650px;
+    preferred-height: 450px;
+    
+    in-out property <PlatformTheme> platform_theme: PlatformTheme.Windows;
+    
+    background: root.platform_theme == PlatformTheme.Windows ? transparent : ThemeEngine.surface_color; 
+    no-frame: root.platform_theme == PlatformTheme.Windows; 
+    
+    init => {
+        ThemeEngine.current_theme = root.platform_theme;
+    }
+
+    in property <[CuteTableRowData]> row_data;
+    in-out property <[string]> tabs: ["Table Widget", "Controls", "Layouts", "Tree View", "Docking"];
+    in-out property <int> active_tab: 0;
+    in-out property <float> splitter_fraction: 0.6;
+    in-out property <bool> show_about_modal: false;
+    in property <string> hardware_info: "Fetching hardware info...";
+    in property <[int]> stress_items;
+    
+    // Status Bar Properties
+    in-out property <string> status_text: "Listo.";
+    in-out property <float> status_progress: 0.0;
+    
+    // Generic Table Model Hooks
+    in-out property <[CuteTableColumn]> table_columns: [
+        { title: "Pista / Archivo", width: 250px },
+        { title: "Codec / Tipo", width: 150px }
+    ];
+
+    
+    in-out property <[CuteTreeItem]> tree_data;
+    callback tree_item_clicked(int, CuteTreeItem);
+    
+    // Actions Callback (0: Open, 1: Save, 2: Settings, 3: Start)
+    callback action_triggered(int);
+    callback tree_toggle_expanded(int, CuteTreeItem);
+    
+    // Delegate Hooks
+    callback delegate_toggled(int, int, bool);
+    callback delegate_combo_changed(int, int, int, string);
+    
+    // Dock Hooks
+    callback dock_detached(string, length, length);
+    in-out property <bool> dock_project_explorer_visible: true;
+    in-out property <bool> dock_properties_visible: true;
+    in-out property <length> dock_left_width: 250px;
+    callback splitter_drag_started(int);
+    callback splitter_dragged(int, length, length);
+    
+    // Generic Context Menu Hooks
+    in-out property <[CuteMenuItem]> context_menu_items;
+    callback context_menu_action(int);
+    callback show_context_menu(); // Disparado desde Rust o Slint para mostrar el popup
+    callback row_right_clicked_forward(int, CuteTableRowData);
+    
+    // Global window properties
+    in-out property <bool> is_maximized: false;
+    
+    // Slint no permite mutar arrays en scripting, por lo que reenviamos a Rust
+    callback forward_column_resize(int, length);
+
+    callback test_signal();
+    callback close_application();
+    callback minimize_application();
+    callback maximize_application();
+    callback start_multiplexing(); 
+    callback add_source_files(); 
+    callback start_drag();
+    // old callback removed
+    callback show_about_dialog();
+
+    // Context Menu Global Instance
+    global_context_menu := PopupWindow {
+        CuteContextMenu {
+            items: root.context_menu_items;
+            item_clicked(id) => { root.context_menu_action(id); }
+        }
+    }
+    
+    show_context_menu => { global_context_menu.show(); }
+
+    Rectangle {
+        border-width: (root.is_maximized || root.platform_theme != PlatformTheme.Windows) ? 0px : 1px;
+        border-color: ThemeEngine.border_subtle;
+        border-radius: (root.is_maximized || root.platform_theme != PlatformTheme.Windows) ? 0px : ThemeEngine.layer_radius;
+        background: ThemeEngine.surface_color;
+
+        VerticalLayout {
+            padding: root.is_maximized && root.platform_theme == PlatformTheme.Windows ? 8px : 0px;
+            
+            if root.platform_theme == PlatformTheme.Windows: CuteTitleBar {
+                title: "Slint-qt Demo Application";
+                close_window => { root.close_application(); }
+                minimize_window => { root.minimize_application(); }
+                maximize_window => { root.maximize_application(); }
+                start_drag => { root.start_drag(); }
+            }
+
+            CuteMenuBar {
+                close_app => { root.close_application(); }
+                show_about => { 
+                    root.show_about_modal = true;
+                    root.show_about_dialog(); 
+                }
+                open_file => { root.add_source_files(); }
+            }
+
+            CuteToolBar {
+                CuteToolButton { icon: "\u{e8a5}"; tooltip: "Abrir archivo"; clicked => { root.action_triggered(0); } }
+                CuteToolButton { icon: "\u{e7c3}"; tooltip: "Guardar configuración"; clicked => { root.action_triggered(1); } }
+                Rectangle { width: 4px; }
+                CuteToolButton { icon: "\u{e74e}"; tooltip: "Ajustes"; clicked => { root.action_triggered(2); } }
+                Rectangle { width: 10px; }
+                CuteToolButton { icon: "\u{e768}"; tooltip: "Iniciar Multiplexado"; clicked => { root.action_triggered(3); } }
+            }
+
+            CuteTabBar {
+                tabs: root.tabs;
+                active_tab <=> root.active_tab;
+            }
+
+            Rectangle {
+                if root.active_tab == 0: Rectangle {
+                    split_layout := VerticalLayout {
+                        padding: 10px;
+                        
+                        Rectangle {
+                            height: split_layout.height * root.splitter_fraction;
+                            background: ThemeEngine.surface_color;
+                            border-radius: ThemeEngine.layer_radius;
+                            border-color: ThemeEngine.border_subtle;
+                            border-width: 1px;
+                            
+                            VerticalLayout {
+                                padding: 20px;
+                                spacing: 15px;
+                                Text {
+                                    text: "CuteTable Demonstration";
+                                    font-size: 18px;
+                                    font-weight: 700;
+                                    color: ThemeEngine.text_color;
+                                }
+                                CuteTable {
+                                    columns: root.table_columns;
+                                    row_data: root.row_data;
+                                    column_resized(idx, w) => {
+                                        // Forward to a Rust callback or update locally. 
+                                        // Slint cannot mutate array elements directly in the script, so we ask Rust.
+                                        root.forward_column_resize(idx, w);
+                                    }
+                                    row_clicked(idx, row) => {
+                                        root.test_signal();
+                                    }
+                                    row_right_clicked(idx, row) => {
+                                        root.row_right_clicked_forward(idx, row);
+                                    }
+                                    delegate_toggled(r, c, val) => {
+                                        root.delegate_toggled(r, c, val);
+                                    }
+                                    delegate_combo_changed(r, c, idx, val) => {
+                                        root.delegate_combo_changed(r, c, idx, val);
+                                    }
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            height: 6px;
+                            background: split_touch.pressed ? ThemeEngine.border_subtle : (split_touch.has-hover ? ThemeEngine.button_border : transparent);
+                            
+                            split_touch := TouchArea {
+                                mouse-cursor: row-resize;
+                                moved => {
+                                    root.splitter_dragged(1, 0, self.mouse-y - self.pressed-y);
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            height: split_layout.height * (1.0 - root.splitter_fraction) - 6px;
+                            background: ThemeEngine.surface_color;
+                            border-radius: ThemeEngine.layer_radius;
+                            border-color: ThemeEngine.border_subtle;
+                            border-width: 1px;
+                            
+                            VerticalLayout {
+                                padding: 20px;
+                                spacing: 10px;
+                                Text {
+                                    text: "Details Panel (Bottom Pane)";
+                                    font-size: 16px;
+                                    font-weight: 600;
+                                    color: ThemeEngine.text_color;
+                                }
+                                
+                                HorizontalLayout {
+                                    alignment: end;
+                                    spacing: 15px;
+                                    
+                                    CuteButton {
+                                        text: "Load Model Data...";
+                                        clicked => { root.add_source_files(); }
+                                    }
+                                    
+                                    CuteButton {
+                                        text: "Test Background Task";
+                                        clicked => { root.start_multiplexing(); }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if root.active_tab == 1: Rectangle {
+                    background: ThemeEngine.surface_color;
+                    border-radius: ThemeEngine.layer_radius;
+                    border-color: ThemeEngine.border_subtle;
+                    border-width: 1px;
+
+                    VerticalLayout {
+                        padding: 20px;
+                        alignment: start;
+                        spacing: 20px;
+                        
+                        Text {
+                            text: "Cute Controls Playground";
+                            color: ThemeEngine.text_color;
+                            font-size: 20px;
+                            font-weight: 600;
+                        }
+
+                        CuteGroupBox {
+                            title: "Propiedades de Pista";
+                            height: 320px;
+                            
+                            VerticalLayout {
+                                spacing: 15px;
+                                alignment: start;
+                                
+                                HorizontalLayout {
+                                    spacing: 15px;
+                                    Text { 
+                                        text: "Nombre de pista:"; 
+                                        vertical-alignment: center; 
+                                        color: ThemeEngine.text_color;
+                                        width: 120px;
+                                    }
+                                    CuteLineEdit {
+                                        placeholder: "Escribe el título (ej. Comentarios del Director)";
+                                        horizontal-stretch: 1;
+                                        edited(val) => { debug("LineEdit editado: " + val); }
+                                    }
+                                }
+
+                                HorizontalLayout {
+                                    spacing: 15px;
+                                    Text { 
+                                        text: "Idioma:"; 
+                                        vertical-alignment: center; 
+                                        color: ThemeEngine.text_color;
+                                        width: 120px;
+                                    }
+                                    CuteComboBox {
+                                        model: ["und (Undetermined)", "eng (English)", "spa (Spanish)", "jpn (Japanese)", "fre (French)"];
+                                        width: 250px;
+                                        selected(idx, val) => { debug("Combo seleccionado: " + val); }
+                                    }
+                                }
+                                
+                                HorizontalLayout {
+                                    spacing: 15px;
+                                    Text { 
+                                        text: "Comentarios:"; 
+                                        color: ThemeEngine.text_color;
+                                        width: 120px;
+                                    }
+                                    CuteTextEdit {
+                                        horizontal-stretch: 1;
+                                        height: 60px;
+                                        text: "";
+                                    }
+                                }
+
+                                Rectangle { height: 10px; } // Separator
+
+                                CuteCheckBox {
+                                    text: "Establecer como pista predeterminada ('Default flag')";
+                                    checked: true;
+                                    toggled(val) => { debug("Default flag: " + (val ? "true" : "false")); }
+                                }
+
+                                CuteCheckBox {
+                                    text: "Forzar reproducción (Forced display)";
+                                    toggled(val) => { debug("Forced flag: " + (val ? "true" : "false")); }
+                                }
+                            }
+                        }
+
+                        CuteGroupBox {
+                            title: "Controles de Valores (Sprint A)";
+                            height: 180px;
+
+                            VerticalLayout {
+                                spacing: 15px;
+                                alignment: start;
+
+                                HorizontalLayout {
+                                    spacing: 20px;
+                                    CuteRadioButton { text: "Modo Estándar"; checked: true; }
+                                    CuteRadioButton { text: "Modo Avanzado"; }
+                                }
+
+                                HorizontalLayout {
+                                    spacing: 15px;
+                                    Text {
+                                        text: "Volumen / Ganancia:";
+                                        color: ThemeEngine.text_color;
+                                        vertical-alignment: center;
+                                        width: 120px;
+                                    }
+                                    CuteSlider {
+                                        minimum: 0.0;
+                                        maximum: 100.0;
+                                        value: 75.0;
+                                        horizontal-stretch: 1;
+                                    }
+                                }
+
+                                HorizontalLayout {
+                                    spacing: 15px;
+                                    Text {
+                                        text: "Progreso Actual:";
+                                        color: ThemeEngine.text_color;
+                                        vertical-alignment: center;
+                                        width: 120px;
+                                    }
+                                    CuteProgressBar {
+                                        progress: 0.65;
+                                        text: "65%";
+                                        horizontal-stretch: 1;
+                                    }
+                                }
+                            }
+                        }
+
+                        CuteGroupBox {
+                            title: "Controles Avanzados (Sprint B)";
+                            height: 250px;
+
+                            VerticalLayout {
+                                spacing: 15px;
+                                alignment: start;
+
+                                HorizontalLayout {
+                                    spacing: 15px;
+                                    Text {
+                                        text: "Retardo de Audio (ms):";
+                                        color: ThemeEngine.text_color;
+                                        vertical-alignment: center;
+                                        width: 140px;
+                                    }
+                                    CuteSpinBox {
+                                        minimum: -5000;
+                                        maximum: 5000;
+                                        value: 0;
+                                    }
+                                }
+
+                                Text {
+                                    text: "Estructura de Archivos (TreeView):";
+                                    color: ThemeEngine.text_color;
+                                }
+
+                                CuteTreeView {
+                                    height: 140px;
+                                    items: [
+                                        { id: 1, text: "Video Tracks", icon: "\u{E8b2}", level: 0, has_children: true, is_expanded: true, is_selected: false },
+                                        { id: 2, text: "Track 1 (AVC/H.264)", icon: "\u{E8b2}", level: 1, has_children: false, is_expanded: false, is_selected: false },
+                                        { id: 3, text: "Audio Tracks", icon: "\u{E8D6}", level: 0, has_children: true, is_expanded: true, is_selected: false },
+                                        { id: 4, text: "Track 2 (AAC English)", icon: "\u{E8D6}", level: 1, has_children: false, is_expanded: false, is_selected: false },
+                                        { id: 5, text: "Track 3 (AC-3 Spanish)", icon: "\u{E8D6}", level: 1, has_children: false, is_expanded: false, is_selected: false },
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if root.active_tab == 2: Rectangle {
+                    background: ThemeEngine.surface_color;
+                    border-radius: ThemeEngine.layer_radius;
+                    border-color: ThemeEngine.border_subtle;
+                    border-width: 1px;
+
+                    VerticalLayout {
+                        padding: 20px;
+                        spacing: 20px;
+                        
+                        Text {
+                            text: "Fase 9: Stress Test (500+ Widgets)";
+                            color: ThemeEngine.text_color;
+                            font-size: 20px;
+                            font-weight: 600;
+                        }
+
+                        ListView {
+                            for item in root.stress_items: CuteGroupBox {
+                                title: "Stress Item #" + item;
+                                height: 210px;
+                                
+                                VerticalLayout {
+                                    spacing: 10px;
+                                    CuteLineEdit { placeholder: "Input for Item " + item; }
+                                    CuteComboBox { model: ["Data A", "Data B", "Data C"]; }
+                                    CuteCheckBox { text: "Enable feature X for " + item; }
+                                    CuteCheckBox { text: "Enable feature Y for " + item; }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if root.active_tab == 3: Rectangle {
+                    background: ThemeEngine.surface_color;
+                    border-radius: ThemeEngine.layer_radius;
+                    border-color: ThemeEngine.border_subtle;
+                    border-width: 1px;
+
+                    VerticalLayout {
+                        padding: 20px;
+                        spacing: 20px;
+                        
+                        Text {
+                            text: "CuteTreeView (Virtual Scrolling)";
+                            color: ThemeEngine.text_color;
+                            font-size: 20px;
+                            font-weight: 600;
+                        }
+
+                        CuteTreeView {
+                            items: root.tree_data;
+                            item_clicked(idx, item) => { root.tree_item_clicked(idx, item); }
+                            toggle_expanded(idx, item) => { root.tree_toggle_expanded(idx, item); }
+                        }
+                    }
+                }
+
+                if root.active_tab == 4: Rectangle {
+                    background: ThemeEngine.surface_color;
+
+                    HorizontalLayout {
+                        padding: 10px;
+                        spacing: 10px;
+
+                        // Left Dock Area
+                        if root.dock_left_width > 0px: VerticalLayout {
+                            width: root.dock_left_width;
+                            spacing: 10px;
+                            
+                            if root.dock_project_explorer_visible: CuteDockWidget {
+                                title: "Project Explorer";
+                                height: 300px;
+                                
+                                header_drag_ended => {
+                                    root.dock_detached(self.title, self.absolute-position.x, self.absolute-position.y);
+                                }
+                                
+                                VerticalLayout {
+                                    padding: 5px;
+                                    CuteTreeView {
+                                        items: root.tree_data;
+                                        item_clicked(idx, item) => { root.tree_item_clicked(idx, item); }
+                                        toggle_expanded(idx, item) => { root.tree_toggle_expanded(idx, item); }
+                                    }
+                                }
+                            }
+                            
+                            if root.dock_properties_visible: CuteDockWidget {
+                                title: "Properties";
+                                height: 200px;
+                                
+                                header_drag_ended => {
+                                    root.dock_detached(self.title, self.absolute-position.x, self.absolute-position.y);
+                                }
+                                
+                                VerticalLayout {
+                                    padding: 10px;
+                                    spacing: 5px;
+                                    Text { text: "No item selected"; color: ThemeEngine.text_color; }
+                                }
+                            }
+                        }
+                        
+                        CuteSplitter {
+                            orientation: SplitterOrientation.Horizontal;
+                            drag_started => {
+                                root.splitter_drag_started(0);
+                            }
+                            dragged(dx, dy) => {
+                                root.splitter_dragged(0, dx, dy);
+                            }
+                        }
+
+                        // Central Widget
+                        Rectangle {
+                            background: ThemeEngine.window_background;
+                            border-color: ThemeEngine.border_subtle;
+                            border-width: 1px;
+                            border-radius: ThemeEngine.layer_radius;
+                            
+                            Text {
+                                text: "Central Workspace";
+                                color: ThemeEngine.text_secondary;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                                font-size: 24px;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            CuteStatusBar {
+                status_text: root.status_text;
+                CuteProgressBar { width: 120px; progress: root.status_progress; text: (root.status_progress * 100) + "%"; }
+            }
+        }
+    }
+
+    // El diálogo modal se pinta encima de todo lo demás
+    CuteDialog {
+        title: "About Slint-qt";
+        message: "Slint-qt Framework v0.1.0\n\nHardware Detected:\n" + root.hardware_info;
+        accept_text: "Awesome!";
+        is_open <=> root.show_about_modal;
+    }
+}

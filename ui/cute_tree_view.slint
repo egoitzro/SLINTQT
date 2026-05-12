@@ -1,0 +1,74 @@
+import { ThemeEngine } from "cute_theme.slint";
+import { ListView } from "std-widgets.slint";
+
+export struct CuteTreeNode {
+    id: int,
+    text: string,
+    level: int,
+    has_children: bool,
+    is_expanded: bool
+}
+
+export component CuteTreeView inherits Rectangle {
+    in property <[CuteTreeNode]> model;
+    callback toggle_node(int, bool);
+    
+    border-radius: ThemeEngine.button_radius;
+    border-width: 1px;
+    border-color: ThemeEngine.border_subtle;
+    background: ThemeEngine.surface_color;
+    clip: true;
+    
+    ListView {
+        for node in root.model: Rectangle {
+            height: 28px;
+            background: ta.pressed ? ThemeEngine.button_pressed_bg : (ta.has-hover ? ThemeEngine.button_hover_bg : transparent);
+            
+            HorizontalLayout {
+                padding-left: 8px + (node.level * 16px);
+                spacing: 8px;
+                
+                // Expand/Collapse Icon
+                Rectangle {
+                    width: 16px;
+                    Text {
+                        text: node.has_children ? (node.is_expanded ? "\u{e70d}" : "\u{e76c}") : ""; 
+                        font-family: "Segoe Fluent Icons";
+                        color: ThemeEngine.text_secondary;
+                        font-size: 10px;
+                        vertical-alignment: center;
+                        horizontal-alignment: center;
+                    }
+                    icon_ta := TouchArea {
+                        clicked => {
+                            if (node.has_children) {
+                                root.toggle_node(node.id, !node.is_expanded);
+                            }
+                        }
+                    }
+                }
+                
+                // Item Icon (e.g. Folder/File)
+                Text {
+                    text: node.has_children ? "\u{e8b7}" : "\u{e8a5}"; 
+                    font-family: "Segoe Fluent Icons";
+                    color: ThemeEngine.accent_color;
+                    font-size: 14px;
+                    vertical-alignment: center;
+                }
+                
+                // Text
+                Text {
+                    text: node.text;
+                    color: ThemeEngine.text_color;
+                    vertical-alignment: center;
+                    font-size: 13px;
+                }
+            }
+            
+            ta := TouchArea {
+                
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+language = "C++"
+namespace = "slint_qt"
+include_guard = "SLINT_QT_H"
+
+[parse]
+parse_deps = false
+include = ["slint-qt"]
+
+[parse.expand]
+crates = ["slint-qt"]

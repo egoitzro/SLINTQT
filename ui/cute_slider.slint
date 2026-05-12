@@ -1,0 +1,54 @@
+import { ThemeEngine } from "cute_theme.slint";
+
+export component CuteSlider inherits Rectangle {
+    in-out property <float> minimum: 0.0;
+    in-out property <float> maximum: 100.0;
+    in-out property <float> value: 50.0;
+    
+    height: 20px;
+    min-width: 100px;
+    
+    // Track background
+    Rectangle {
+        y: parent.height / 2 - 2px;
+        height: 4px;
+        width: parent.width;
+        background: ThemeEngine.border_subtle;
+        border-radius: 2px;
+        
+        // Track fill
+        Rectangle {
+            width: (root.value - root.minimum) / (root.maximum - root.minimum) * parent.width;
+            height: parent.height;
+            background: ThemeEngine.accent_color;
+            border-radius: 2px;
+        }
+    }
+    
+    handle := Rectangle {
+        x: (root.value - root.minimum) / (root.maximum - root.minimum) * (parent.width - self.width);
+        y: parent.height / 2 - 8px;
+        width: 16px;
+        height: 16px;
+        border-radius: 8px;
+        background: ThemeEngine.button_hover_bg;
+        border-width: 1px;
+        border-color: ThemeEngine.border_subtle;
+        drop-shadow-color: rgba(0,0,0,0.2);
+        drop-shadow-blur: 4px;
+        drop-shadow-offset-y: 2px;
+    }
+    
+    ta := TouchArea {
+        moved => {
+            let progress = self.mouse-x / root.width;
+            let clamped = Math.max(0.0, Math.min(1.0, progress));
+            root.value = root.minimum + clamped * (root.maximum - root.minimum);
+        }
+        clicked => {
+            let progress = self.mouse-x / root.width;
+            let clamped = Math.max(0.0, Math.min(1.0, progress));
+            root.value = root.minimum + clamped * (root.maximum - root.minimum);
+        }
+    }
+}

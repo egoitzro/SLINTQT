@@ -1,0 +1,22 @@
+import { ThemeEngine } from "cute_theme.slint";
+import { TextEdit } from "std-widgets.slint";
+
+export component CuteTextEdit inherits Rectangle {
+    in-out property <string> text: "";
+    callback edited(string);
+    
+    border-radius: ThemeEngine.button_radius;
+    border-width: 1px;
+    border-color: ThemeEngine.border_subtle;
+    background: ThemeEngine.surface_color;
+    
+    TextEdit {
+        x: 8px;
+        y: 8px;
+        width: parent.width - 16px;
+        height: parent.height - 16px;
+        text <=> root.text;
+        font-size: 13px;
+        edited => { root.edited(self.text); }
+    }
+}

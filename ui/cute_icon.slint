@@ -1,0 +1,48 @@
+import { ThemeEngine } from "cute_theme.slint";
+
+export global IconManager {
+    // Aquí el backend de Rust inyectará las rutas o imágenes cargadas.
+    // Como Slint compila esto de manera fuertemente tipada, exponemos las propiedades de las imágenes que necesitamos.
+    in-out property <image> document_new;
+    in-out property <image> document_open;
+    in-out property <image> document_save;
+    in-out property <image> document_save_as;
+    in-out property <image> application_exit;
+    in-out property <image> media_playback_start;
+    in-out property <image> view_process_system;
+    in-out property <image> utilities_terminal;
+    in-out property <image> help_contents;
+    in-out property <image> preferences_system;
+    in-out property <image> tools_report_bug;
+    // Si la imagen está vacía, usaremos un texto/emoji de fallback
+}
+
+export component CuteIcon inherits Rectangle {
+    in property <image> icon_source;
+    in property <string> fallback_emoji: "❓";
+    in property <length> icon_size: 16px;
+
+    width: icon_size;
+    height: icon_size;
+    background: transparent;
+
+    // Si icon_source no es un asset vacío, renderiza el SVG
+    i := Image {
+        source: root.icon_source;
+        width: 100%;
+        height: 100%;
+        colorize: ThemeEngine.icon_color;
+        visible: root.icon_source.width > 0;
+    }
+
+    // Fallback: Si no hay SVG cargado, dibuja el emoji clásico de Windows
+    Text {
+        text: root.fallback_emoji;
+        font-family: "Segoe Fluent Icons";
+        font-size: root.icon_size;
+        color: ThemeEngine.text_color;
+        visible: root.icon_source.width == 0;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+    }
+}

@@ -1,0 +1,23 @@
+import { ThemeEngine } from "cute_theme.slint";
+
+export component CuteToolBar inherits Rectangle {
+    height: 40px;
+    background: transparent;
+    
+    HorizontalLayout {
+        padding-left: 8px;
+        padding-right: 8px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        alignment: start;
+        spacing: 4px;
+        @children
+    }
+    
+    Rectangle {
+        y: parent.height - 1px;
+        height: 1px;
+        width: parent.width;
+        background: ThemeEngine.border_subtle;
+    }
+}

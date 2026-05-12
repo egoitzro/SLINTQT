@@ -1,0 +1,85 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export struct CuteMenuItem {
+    id: int,
+    text: string,
+    icon: string,
+    has_separator: bool,
+}
+
+export component CuteContextMenu inherits Rectangle {
+    in property <[CuteMenuItem]> items;
+    callback item_clicked(int);
+
+    width: 220px;
+    
+    // Acrylic/Mica look (ThemeEngine handles opacity)
+        background: ThemeEngine.current_theme == PlatformTheme.MacOS ? rgba(40, 40, 40, 0.95) : ThemeEngine.surface_color;
+        border-color: ThemeEngine.border_subtle;
+        border-width: 1px;
+        border-radius: ThemeEngine.button_radius;
+        
+        // Pseudo-sombra (Slint natively doesn't have blur shadow without DropShadow component, so we keep it clean)
+
+        VerticalLayout {
+            padding: 4px;
+            for item in root.items: VerticalLayout {
+                
+                TouchArea {
+                    height: 32px;
+                    clicked => {
+                        root.item_clicked(item.id);
+                        // PopupWindow se cierra automáticamente al hacer clic en un TouchArea si no capturamos indefinidamente,
+                        // pero Slint no tiene root.close(). Se cierra solo al perder foco o hacer clic.
+                    }
+                    
+                    Rectangle {
+                        background: parent.has-hover ? ThemeEngine.button_hover_bg : transparent;
+                        border-radius: 4px;
+                        
+                        HorizontalLayout {
+                            padding-left: 12px;
+                            padding-right: 12px;
+                            spacing: 12px;
+                            
+                            // Icono
+                            Rectangle {
+                                width: 16px;
+                                Text {
+                                    visible: item.icon != "";
+                                    text: item.icon;
+                                    font-family: "Segoe Fluent Icons";
+                                    vertical-alignment: center;
+                                    horizontal-alignment: center;
+                                    color: ThemeEngine.text_color;
+                                    font-size: 14px;
+                                }
+                            }
+                            
+                            // Texto
+                            Text {
+                                text: item.text;
+                                vertical-alignment: center;
+                                color: ThemeEngine.text_color;
+                                font-size: 13px;
+                                font-weight: 400;
+                            }
+                        }
+                    }
+                }
+                
+                if item.has_separator: VerticalLayout {
+                    Rectangle { height: 4px; background: transparent; }
+                    HorizontalLayout {
+                        padding-left: 12px;
+                        padding-right: 12px;
+                        Rectangle {
+                            height: 1px;
+                            background: ThemeEngine.border_subtle;
+                        }
+                    }
+                    Rectangle { height: 4px; background: transparent; }
+                }
+            }
+        }
+}

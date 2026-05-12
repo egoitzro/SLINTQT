@@ -1,0 +1,25 @@
+import { ThemeEngine } from "cute_theme.slint";
+
+export component CuteToolButton inherits Rectangle {
+    in property <string> icon: "\u{e7c3}"; 
+    in property <string> tooltip: "";
+    callback clicked();
+    
+    width: 32px;
+    height: 32px;
+    border-radius: ThemeEngine.button_radius;
+    background: ta.pressed ? ThemeEngine.button_pressed_bg : (ta.has-hover ? ThemeEngine.button_hover_bg : transparent);
+    
+    Text {
+        text: root.icon;
+        font-family: "Segoe Fluent Icons";
+        color: ThemeEngine.text_color;
+        font-size: 16px;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+    }
+    
+    ta := TouchArea {
+        clicked => { root.clicked(); }
+    }
+}

@@ -1,0 +1,52 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+import { CuteDockWidget } from "cute_dock_widget.slint";
+import { CuteTreeView, CuteTreeItem } from "cute_tree.slint";
+
+export component CuteFloatingWindow inherits Window {
+    in property <string> dock_title: "Floating Dock";
+    callback close_window();
+    callback dock_dropped(length, length);
+    callback window_drag_started();
+    callback window_dragged(length, length);
+    
+    title: root.dock_title;
+    no-frame: true;
+    background: transparent;
+    width: 300px;
+    height: 400px;
+    
+    in property <int> content_type: 0; // 0 = Project Explorer, 1 = Properties
+    in property <[CuteTreeItem]> tree_data;
+    
+    // Callbacks for the TreeView inside the float window
+    callback tree_item_clicked(int, CuteTreeItem);
+    callback tree_toggle_expanded(int, CuteTreeItem);
+    
+    CuteDockWidget {
+        title: root.dock_title;
+        is_floatable: false; // It's already floating
+        is_floating: true;
+        
+        close_clicked => { root.close_window(); }
+        header_drag_started => { root.window_drag_started(); }
+        header_dragged(dx, dy) => { root.window_dragged(dx, dy); }
+        header_drag_ended => {
+            root.dock_dropped(self.absolute-position.x, self.absolute-position.y);
+        }
+        
+        if root.content_type == 0: VerticalLayout {
+            padding: 5px;
+            CuteTreeView {
+                items: root.tree_data;
+                item_clicked(idx, item) => { root.tree_item_clicked(idx, item); }
+                toggle_expanded(idx, item) => { root.tree_toggle_expanded(idx, item); }
+            }
+        }
+        
+        if root.content_type == 1: VerticalLayout {
+            padding: 10px;
+            spacing: 5px;
+            Text { text: "No item selected (Floating)"; color: ThemeEngine.text_color; }
+        }
+    }
+}
