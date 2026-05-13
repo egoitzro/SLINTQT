@@ -60,7 +60,7 @@ export component CuteTable {
                 
                 HorizontalLayout {
                     for col[idx] in root.columns: Rectangle {
-                        width: idx == root.columns.length - 1 ? 0px : col.width;
+                        preferred-width: idx == root.columns.length - 1 ? 1000px : col.width;
                         horizontal-stretch: idx == root.columns.length - 1 ? 1 : 0;
                         clip: true;
                         border-width: 1px;
