@@ -51,7 +51,7 @@ La demo incluye:
 
 ## 📦 Uso como Librería
 
-Slint-qt compila de manera predeterminada como `rlib` para proyectos nativos en Rust y como `cdylib` para integraciones FFI.
+SlintQT compila de manera predeterminada como `rlib` para proyectos nativos en Rust y como `cdylib` para integraciones FFI.
 
 ```toml
 # En el Cargo.toml de tu proyecto final
