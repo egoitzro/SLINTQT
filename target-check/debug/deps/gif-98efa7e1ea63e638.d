@@ -1,0 +1,12 @@
+C:\Users\egoit\.gemini\antigravity\scratch\slint-qt\target-check\debug\deps\gif-98efa7e1ea63e638.d: C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\lib.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\common.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\encoder.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\reader\mod.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\reader\converter.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\reader\decoder.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\traits.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\../README.md
+
+C:\Users\egoit\.gemini\antigravity\scratch\slint-qt\target-check\debug\deps\libgif-98efa7e1ea63e638.rmeta: C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\lib.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\common.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\encoder.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\reader\mod.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\reader\converter.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\reader\decoder.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\traits.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\../README.md
+
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\lib.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\common.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\encoder.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\reader\mod.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\reader\converter.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\reader\decoder.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\traits.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\gif-0.14.2\src\../README.md:

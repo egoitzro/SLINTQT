@@ -3,7 +3,7 @@ use windows_sys::Win32::System::DataExchange::{OpenClipboard, CloseClipboard, Ge
 #[cfg(windows)]
 use windows_sys::Win32::System::Memory::{GlobalLock, GlobalUnlock, GlobalAlloc, GHND};
 #[cfg(windows)]
-use windows_sys::Win32::UI::Shell::{DragQueryFileW, HDROP, DROPFILES};
+use windows_sys::Win32::UI::Shell::{DragQueryFileW, DROPFILES};
 #[cfg(windows)]
 use windows_sys::Win32::Foundation::HWND;
 

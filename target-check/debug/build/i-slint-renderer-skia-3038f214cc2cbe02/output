@@ -1,0 +1,6 @@
+cargo:rustc-check-cfg=cfg(skia_backend_opengl)
+cargo:rustc-check-cfg=cfg(skia_backend_metal)
+cargo:rustc-check-cfg=cfg(skia_backend_vulkan)
+cargo:rustc-check-cfg=cfg(skia_backend_software)
+cargo:rustc-cfg=skia_backend_software
+cargo:rustc-check-cfg=cfg(slint_nightly_test)

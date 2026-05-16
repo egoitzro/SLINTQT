@@ -1,0 +1,11 @@
+C:\Users\egoit\.gemini\antigravity\scratch\slint-qt\target-check\debug\deps\float_cmp-3aa5ef1ccabd009b.d: C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\lib.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\macros.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\ulps.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\ulps_eq.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\eq.rs
+
+C:\Users\egoit\.gemini\antigravity\scratch\slint-qt\target-check\debug\deps\libfloat_cmp-3aa5ef1ccabd009b.rlib: C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\lib.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\macros.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\ulps.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\ulps_eq.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\eq.rs
+
+C:\Users\egoit\.gemini\antigravity\scratch\slint-qt\target-check\debug\deps\libfloat_cmp-3aa5ef1ccabd009b.rmeta: C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\lib.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\macros.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\ulps.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\ulps_eq.rs C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\eq.rs
+
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\lib.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\macros.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\ulps.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\ulps_eq.rs:
+C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\float-cmp-0.9.0\src\eq.rs:

@@ -1,0 +1,137 @@
+import { ThemeEngine } from "cute_theme.slint";
+import { ListView, ScrollView } from "std-widgets.slint";
+import { CuteButton } from "cute_button.slint";
+
+export component CuteDualSelector inherits Rectangle {
+    in property <[string]> available_items;
+    in property <[string]> selected_items;
+    in property <string> left_title: "Disponible:";
+    in property <string> right_title: "Seleccionado:";
+    
+    out property <int> active_available_idx: -1;
+    out property <int> active_selected_idx: -1;
+    
+    callback add_item(int);
+    callback remove_item(int);
+    callback reset_all();
+    
+    height: 100%;
+    
+    HorizontalLayout {
+        spacing: 8px;
+        
+        // Left Panel
+        VerticalLayout {
+            spacing: 4px;
+            Text {
+                text: root.left_title;
+                color: ThemeEngine.text_color;
+                font-size: 12px;
+            }
+            Rectangle {
+                border-color: ThemeEngine.border_subtle;
+                border-width: 1px;
+                background: ThemeEngine.surface_color;
+                
+                ListView {
+                    for item[idx] in root.available_items: Rectangle {
+                        height: 24px;
+                        background: root.active_available_idx == idx ? ThemeEngine.button_pressed_bg : (ta_av.has-hover ? ThemeEngine.button_hover_bg : transparent);
+                        
+                        Text {
+                            text: item;
+                            color: ThemeEngine.text_color;
+                            font-size: 13px;
+                            vertical-alignment: center;
+                            x: 4px;
+                        }
+                        
+                        ta_av := TouchArea {
+                            clicked => {
+                                root.active_available_idx = idx;
+                            }
+                            double-clicked => {
+                                root.active_available_idx = idx;
+                                root.add_item(idx);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Center Buttons
+        VerticalLayout {
+            alignment: center;
+            spacing: 8px;
+            
+            CuteButton {
+                text: "▶";
+                enabled: root.active_available_idx >= 0 && root.active_available_idx < root.available_items.length;
+                clicked => {
+                    if (root.active_available_idx >= 0) {
+                        root.add_item(root.active_available_idx);
+                        // root.active_available_idx = -1; // keep it or clear it
+                    }
+                }
+            }
+            CuteButton {
+                text: "◀";
+                enabled: root.active_selected_idx >= 0 && root.active_selected_idx < root.selected_items.length;
+                clicked => {
+                    if (root.active_selected_idx >= 0) {
+                        root.remove_item(root.active_selected_idx);
+                        // root.active_selected_idx = -1;
+                    }
+                }
+            }
+            Rectangle { height: 16px; } // spacer
+            CuteButton {
+                icon: "↺";
+                clicked => {
+                    root.reset_all();
+                }
+            }
+        }
+        
+        // Right Panel
+        VerticalLayout {
+            spacing: 4px;
+            Text {
+                text: root.right_title;
+                color: ThemeEngine.text_color;
+                font-size: 12px;
+            }
+            Rectangle {
+                border-color: ThemeEngine.border_subtle;
+                border-width: 1px;
+                background: ThemeEngine.surface_color;
+                
+                ListView {
+                    for item[idx] in root.selected_items: Rectangle {
+                        height: 24px;
+                        background: root.active_selected_idx == idx ? ThemeEngine.button_pressed_bg : (ta_sel.has-hover ? ThemeEngine.button_hover_bg : transparent);
+                        
+                        Text {
+                            text: item;
+                            color: ThemeEngine.text_color;
+                            font-size: 13px;
+                            vertical-alignment: center;
+                            x: 4px;
+                        }
+                        
+                        ta_sel := TouchArea {
+                            clicked => {
+                                root.active_selected_idx = idx;
+                            }
+                            double-clicked => {
+                                root.active_selected_idx = idx;
+                                root.remove_item(idx);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

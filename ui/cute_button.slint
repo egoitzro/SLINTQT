@@ -2,6 +2,8 @@ import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
 
 export component CuteButton {
     in property <string> text: "Button";
+    in property <string> icon: "";
+    in property <bool> enabled: true;
     out property <bool> has_focus;
     
     // Qt-like signals
@@ -11,6 +13,7 @@ export component CuteButton {
 
     min-width: 80px;
     min-height: 28px;
+    opacity: root.enabled ? 1.0 : 0.5;
 
     rect := Rectangle {
         border-radius: ThemeEngine.button_radius;
@@ -27,7 +30,15 @@ export component CuteButton {
 
         HorizontalLayout {
             alignment: center;
-            Text {
+            spacing: 4px;
+            if root.icon != "" : Text {
+                text: root.icon;
+                color: ThemeEngine.text_color;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+                font-size: 14px;
+            }
+            if root.text != "" : Text {
                 text: root.text;
                 color: ThemeEngine.text_color;
                 vertical-alignment: center;
@@ -39,8 +50,9 @@ export component CuteButton {
     }
 
     touch := TouchArea {
-        clicked => { root.clicked(); }
+        clicked => { if root.enabled { root.clicked(); } }
         pointer-event(event) => {
+            if (!root.enabled) { return; }
             if (event.kind == PointerEventKind.down) {
                 root.pressed();
             } else if (event.kind == PointerEventKind.up) {

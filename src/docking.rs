@@ -214,6 +214,15 @@ impl DockManager {
                                     }
                             }
                             
+                            #[cfg(not(windows))]
+                            {
+                                let pos = win.window().position();
+                                win.window().set_position(slint::PhysicalPosition::new(
+                                    pos.x + offset_x as i32,
+                                    pos.y + offset_y as i32
+                                ));
+                            }
+                            
                             // Slint redraw limits the event stream visually but native window moves instantly
                             win.window().request_redraw();
                         }
@@ -226,28 +235,15 @@ impl DockManager {
                 float_win.on_dock_dropped(move |_, _| {
                     if let Some(ui) = ui_weak_drop.upgrade()
                         && let Some(win) = float_win_drop.upgrade() {
-                            let mut is_inside = false;
+                            let float_pos = win.window().position();
+                            let float_size = win.window().size();
+                            let main_pos = ui.window().position();
+                            let main_size = ui.window().size();
                             
-                            #[cfg(windows)]
-                            {
-                                let mut pt = windows_sys::Win32::Foundation::POINT { x: 0, y: 0 };
-                                unsafe { windows_sys::Win32::UI::WindowsAndMessaging::GetCursorPos(&mut pt) };
-                                
-                                let main_pos = ui.window().position();
-                                let main_size = ui.window().size();
-                                
-                                if pt.x >= main_pos.x && pt.x <= main_pos.x + main_size.width as i32 &&
-                                   pt.y >= main_pos.y && pt.y <= main_pos.y + main_size.height as i32 {
-                                    is_inside = true;
-                                }
-                            }
+                            let overlap_x = float_pos.x < main_pos.x + main_size.width as i32 && float_pos.x + float_size.width as i32 > main_pos.x;
+                            let overlap_y = float_pos.y < main_pos.y + main_size.height as i32 && float_pos.y + float_size.height as i32 > main_pos.y;
                             
-                            #[cfg(not(windows))]
-                            {
-                                // Simpler heuristic for non-Windows platforms (always drop if they stop dragging? Or just assume it for now)
-                                // Slint doesn't easily expose global mouse coords directly without winit
-                                is_inside = true;
-                            }
+                            let mut is_inside = overlap_x && overlap_y;
                             
                             if is_inside {
                                 if title_drop == "Project Explorer" {

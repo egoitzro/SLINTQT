@@ -48,5 +48,9 @@ export component CuteCheckBox inherits Rectangle {
             root.checked = !root.checked;
             root.toggled(root.checked);
         }
+        double-clicked => {
+            root.checked = !root.checked;
+            root.toggled(root.checked);
+        }
     }
 }
