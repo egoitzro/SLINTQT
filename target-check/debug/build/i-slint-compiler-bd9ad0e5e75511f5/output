@@ -1,3 +1,0 @@
-cargo:rustc-check-cfg=cfg(slint_debug_property)
-cargo:rerun-if-changed=widgets
-cargo:rustc-env=SLINT_WIDGETS_LIBRARY=C:\Users\egoit\.gemini\antigravity\scratch\slint-qt\target-check\debug\build\i-slint-compiler-bd9ad0e5e75511f5\out\included_library.rs

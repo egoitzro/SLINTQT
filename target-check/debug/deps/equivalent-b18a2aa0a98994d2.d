@@ -1,7 +1,0 @@
-C:\Users\egoit\.gemini\antigravity\scratch\slint-qt\target-check\debug\deps\equivalent-b18a2aa0a98994d2.d: C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\equivalent-1.0.2\src\lib.rs
-
-C:\Users\egoit\.gemini\antigravity\scratch\slint-qt\target-check\debug\deps\libequivalent-b18a2aa0a98994d2.rlib: C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\equivalent-1.0.2\src\lib.rs
-
-C:\Users\egoit\.gemini\antigravity\scratch\slint-qt\target-check\debug\deps\libequivalent-b18a2aa0a98994d2.rmeta: C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\equivalent-1.0.2\src\lib.rs
-
-C:\Users\egoit\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\equivalent-1.0.2\src\lib.rs:
