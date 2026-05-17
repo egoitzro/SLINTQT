@@ -14,6 +14,7 @@ export enum CuteDelegateType {
 export struct CuteTableColumn {
     title: string,
     width: length,
+    data_index: int,
 }
 
 export struct CuteTableItem {
@@ -33,11 +34,15 @@ export struct CuteTableRowData {
 export component CuteTable {
     in property <[CuteTableColumn]> columns;
     in property <[CuteTableRowData]> row_data;
+    in property <int> active_row: -1;
     
     // Señales emulando QTableView
     callback row_clicked(int, CuteTableRowData);
+    callback row_double_clicked(int, CuteTableRowData);
     callback row_right_clicked(int, CuteTableRowData);
+    callback table_right_clicked();
     callback column_resized(int, length);
+    callback column_reordered(int, int);
     
     // Señales de delegados
     callback delegate_toggled(int, int, bool);
@@ -51,6 +56,15 @@ export component CuteTable {
         border-width: 1px;
         border-radius: ThemeEngine.button_radius;
         background: ThemeEngine.window_background;
+        
+        TouchArea {
+            width: 100%; height: 100%;
+            pointer-event(event) => {
+                if (event.button == PointerEventButton.right && event.kind == PointerEventKind.down) {
+                    root.table_right_clicked();
+                }
+            }
+        }
 
         VerticalLayout {
             // Cabeceras (Headers) dinámicas
@@ -75,12 +89,28 @@ export component CuteTable {
                             font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
                         }
                         
+                        
                         if idx < root.columns.length - 1: TouchArea {
                             x: parent.width - 4px;
                             width: 8px;
                             mouse-cursor: ew-resize;
                             moved => {
                                 root.column_resized(idx, col.width + (self.mouse-x - self.pressed-x));
+                            }
+                        }
+                        
+                        TouchArea {
+                            x: 0;
+                            width: parent.width - 8px;
+                            moved => {
+                                if (self.pressed) {
+                                    let offset = self.mouse-x - self.pressed-x;
+                                    if (offset > parent.width && idx < root.columns.length - 1) {
+                                        root.column_reordered(idx, idx + 1);
+                                    } else if (offset < -parent.width && idx > 0) {
+                                        root.column_reordered(idx, idx - 1);
+                                    }
+                                }
                             }
                         }
                     }
@@ -91,10 +121,23 @@ export component CuteTable {
             ListView {
                 for row[row_idx] in root.row_data: Rectangle {
                     height: 28px;
-                    background: row.is_selected ? 
+                    background: root.active_row == row_idx ? 
                                 (ThemeEngine.current_theme == PlatformTheme.MacOS ? #0063E1 : #0078D7) : 
                                 (touch.has-hover ? ThemeEngine.button_hover_bg : 
                                 (Math.mod(row_idx, 2) == 0 ? ThemeEngine.window_background : ThemeEngine.button_bg));
+                    touch := TouchArea {
+                        clicked => {
+                            root.row_clicked(row_idx, row);
+                        }
+                        double-clicked => {
+                            root.row_double_clicked(row_idx, row);
+                        }
+                        pointer-event(event) => {
+                            if (event.button == PointerEventButton.right && event.kind == PointerEventKind.down) {
+                                root.row_right_clicked(row_idx, row);
+                            }
+                        }
+                    }
 
                     HorizontalLayout {
                         for col[col_idx] in root.columns: Rectangle {
@@ -105,44 +148,33 @@ export component CuteTable {
                             HorizontalLayout {
                                 padding-left: 8px;
                                 padding-right: 8px;
-                                // Iterar celdas protegiendo contra out-of-bounds
-                                if col_idx < row.cells.length: Rectangle {
-                                    if row.cells[col_idx].delegate_type == CuteDelegateType.Text : Text { 
-                                        text: row.cells[col_idx].text; 
-                                        color: row.is_selected ? #FFFFFF : ThemeEngine.text_color;
+                                // Iterar celdas protegiendo contra out-of-bounds usando data_index
+                                if col.data_index < row.cells.length: Rectangle {
+                                    if row.cells[col.data_index].delegate_type == CuteDelegateType.Text : Text { 
+                                        text: row.cells[col.data_index].text; 
+                                        color: root.active_row == row_idx ? #FFFFFF : ThemeEngine.text_color;
                                         vertical-alignment: center; 
                                         overflow: elide;
                                     }
-                                    if row.cells[col_idx].delegate_type == CuteDelegateType.CheckBox : CuteCheckBox {
-                                        text: row.cells[col_idx].text;
-                                        checked: row.cells[col_idx].checked;
+                                    if row.cells[col.data_index].delegate_type == CuteDelegateType.CheckBox : CuteCheckBox {
+                                        text: row.cells[col.data_index].text;
+                                        checked: row.cells[col.data_index].checked;
                                         toggled(val) => {
-                                            root.delegate_toggled(row_idx, col_idx, val);
+                                            root.delegate_toggled(row_idx, col.data_index, val);
                                         }
                                     }
-                                    if row.cells[col_idx].delegate_type == CuteDelegateType.ComboBox : CuteComboBox {
-                                        model: row.cells[col_idx].combo_options;
-                                        current_index: row.cells[col_idx].combo_selected_index;
-                                        selected(idx, val) => {
-                                            root.delegate_combo_changed(row_idx, col_idx, idx, val);
+                                    if row.cells[col.data_index].delegate_type == CuteDelegateType.ComboBox : CuteComboBox {
+                                        model: row.cells[col.data_index].combo_options;
+                                        current_index: row.cells[col.data_index].combo_selected_index;
+                                        selected(sel_idx, val) => {
+                                            root.delegate_combo_changed(row_idx, col.data_index, sel_idx, val);
                                         }
                                     }
-                                    if row.cells[col_idx].delegate_type == CuteDelegateType.ProgressBar : CuteProgressBar {
-                                        progress: row.cells[col_idx].progress;
-                                        text: row.cells[col_idx].text;
+                                    if row.cells[col.data_index].delegate_type == CuteDelegateType.ProgressBar : CuteProgressBar {
+                                        progress: row.cells[col.data_index].progress;
+                                        text: row.cells[col.data_index].text;
                                     }
                                 }
-                            }
-                        }
-                    }
-
-                    touch := TouchArea {
-                        clicked => {
-                            root.row_clicked(row_idx, row);
-                        }
-                        pointer-event(event) => {
-                            if (event.button == PointerEventButton.right && event.kind == PointerEventKind.down) {
-                                root.row_right_clicked(row_idx, row);
                             }
                         }
                     }

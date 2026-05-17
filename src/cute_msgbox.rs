@@ -23,7 +23,7 @@ pub enum CuteMessageBoxResult {
 pub fn show_message_box(title: &str, text: &str, style: CuteMessageBoxStyle) -> CuteMessageBoxResult {
     #[cfg(windows)]
     unsafe {
-        let mut flags = match style {
+        let flags = match style {
             CuteMessageBoxStyle::Information => MB_OK | MB_ICONINFORMATION,
             CuteMessageBoxStyle::Warning => MB_OK | MB_ICONWARNING,
             CuteMessageBoxStyle::Error => MB_OK | MB_ICONERROR,

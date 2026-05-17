@@ -18,13 +18,13 @@ unsafe extern "system" fn monitor_enum_proc(
     _hdc: HDC,
     lprect: *mut RECT,
     lparam: LPARAM,
-) -> BOOL {
+) -> BOOL { unsafe {
     let rects = &mut *(lparam as *mut Vec<RECT>);
     if !lprect.is_null() {
         rects.push(*lprect);
     }
     1 // TRUE
-}
+}}
 
 pub fn save_geometry(window: &slint::Window, settings: &mut CuteSettings) {
     let pos = window.position();

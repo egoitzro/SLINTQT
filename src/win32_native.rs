@@ -1,27 +1,33 @@
 #[cfg(windows)]
 pub mod win32 {
     use std::ptr;
-    use std::sync::Mutex;
-    use std::ffi::OsString;
-    use std::os::windows::ffi::OsStringExt;
-    
     use windows_sys::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
-    use windows_sys::Win32::System::Com::{CoInitializeEx, CoCreateInstance, COINIT_APARTMENTTHREADED, COINIT_MULTITHREADED, CLSCTX_INPROC_SERVER};
+    use windows_sys::Win32::System::Com::{CoInitializeEx, CoCreateInstance, COINIT_APARTMENTTHREADED, CLSCTX_INPROC_SERVER};
     use windows_sys::Win32::UI::Shell::{
-        DragAcceptFiles, DragFinish, DragQueryFileW, SetWindowSubclass, DefSubclassProc,
+        SetWindowSubclass, DefSubclassProc,
         Shell_NotifyIconW, NOTIFYICONDATAW, TaskbarList, NIM_ADD, NIM_DELETE,
         NIF_ICON, NIF_MESSAGE, NIF_TIP, TBPF_NORMAL, TBPF_NOPROGRESS
     };
     use windows_sys::Win32::UI::WindowsAndMessaging::{
-        SendMessageW, WM_DROPFILES, WM_USER, WM_SETICON, ICON_SMALL, ICON_BIG,
+        SendMessageW, WM_USER, WM_SETICON, ICON_SMALL, ICON_BIG,
         LoadImageW, IMAGE_ICON, LR_DEFAULTSIZE, LR_LOADFROMFILE,
         WM_LBUTTONUP, WM_RBUTTONUP, WM_DESTROY,
-        FindWindowW, WM_COPYDATA, WM_HOTKEY, WM_SETTINGCHANGE
+        FindWindowW, WM_COPYDATA, WM_HOTKEY, WM_SETTINGCHANGE,
     };
     use windows_sys::Win32::UI::Input::KeyboardAndMouse::RegisterHotKey;
     use windows_sys::Win32::Foundation::{GetLastError, ERROR_ALREADY_EXISTS};
     use windows_sys::Win32::Graphics::Dwm::{DwmSetWindowAttribute};
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+
+    /// Extrae el HWND de un handle genérico
+    fn get_hwnd(window: &slint::Window) -> Option<HWND> {
+        if let Ok(handle) = window.window_handle().window_handle() {
+            if let raw_window_handle::RawWindowHandle::Win32(w) = handle.as_raw() {
+                return Some(w.hwnd.get() as HWND);
+            }
+        }
+        None
+    }
 
     #[link(name = "kernel32")]
     unsafe extern "system" {
@@ -75,18 +81,6 @@ pub mod win32 {
         data4: [0x90, 0xe9, 0x9e, 0x9f, 0x8a, 0x5e, 0xef, 0xaf],
     };
 
-    static CALLBACKS: Mutex<Option<Box<dyn Fn(Vec<String>) + Send + Sync>>> = Mutex::new(None);
-
-    /// Extrae el HWND de un handle genérico
-    fn get_hwnd<W: HasWindowHandle>(window: &W) -> Option<HWND> {
-        if let Ok(handle) = window.window_handle() {
-            if let RawWindowHandle::Win32(w) = handle.as_raw() {
-                return Some(w.hwnd.get() as HWND);
-            }
-        }
-        None
-    }
-
     /// Procedimiento de subclase para interceptar mensajes nativos
     unsafe extern "system" fn subclass_proc(
         hwnd: HWND,
@@ -98,27 +92,6 @@ pub mod win32 {
     ) -> LRESULT {
         unsafe {
             match msg {
-                WM_DROPFILES => {
-                    let hdrop = wparam as *mut std::ffi::c_void;
-                    let count = DragQueryFileW(hdrop, 0xFFFFFFFF, ptr::null_mut(), 0);
-                    let mut paths = Vec::new();
-                    for i in 0..count {
-                        let mut buffer = [0u16; 260];
-                        DragQueryFileW(hdrop, i, buffer.as_mut_ptr(), 260);
-                        let len = buffer.iter().take_while(|&&c| c != 0).count();
-                        if let Ok(s) = String::from_utf16(&buffer[..len]) {
-                            paths.push(s);
-                        }
-                    }
-                    DragFinish(hdrop);
-
-                    if let Ok(cb) = CALLBACKS.lock() {
-                        if let Some(ref func) = *cb {
-                            func(paths);
-                        }
-                    }
-                    return 0;
-                }
                 WM_COPYDATA => {
                     let cds = lparam as *const COPYDATASTRUCT;
                     if !cds.is_null() {
@@ -175,21 +148,6 @@ pub mod win32 {
         }
     }
 
-    /// 1. Drag & Drop
-    pub fn setup_drag_and_drop<W: HasWindowHandle>(window: &W, callback: impl Fn(Vec<String>) + Send + Sync + 'static) -> Result<(), &'static str> {
-        let hwnd = get_hwnd(window).ok_or("Invalid HWND")?;
-        
-        if let Ok(mut cb) = CALLBACKS.lock() {
-            *cb = Some(Box::new(callback));
-        }
-
-        unsafe {
-            DragAcceptFiles(hwnd, 1 /* TRUE */);
-            SetWindowSubclass(hwnd, Some(subclass_proc), 1, 0);
-        }
-        Ok(())
-    }
-
     /// 2. Taskbar Progress
     pub struct TaskbarManager {
         taskbar: *mut ITaskbarList3,
@@ -221,7 +179,7 @@ pub mod win32 {
             }
         }
 
-        pub fn set_progress<W: HasWindowHandle>(&self, window: &W, completed: u64, total: u64) {
+        pub fn set_progress(&self, window: &slint::Window, completed: u64, total: u64) {
             if let Some(hwnd) = get_hwnd(window) {
                 unsafe {
                     if let Some(vtbl) = (*self.taskbar).lpVtbl.as_ref() {
@@ -232,7 +190,7 @@ pub mod win32 {
             }
         }
 
-        pub fn clear_progress<W: HasWindowHandle>(&self, window: &W) {
+        pub fn clear_progress(&self, window: &slint::Window) {
             if let Some(hwnd) = get_hwnd(window) {
                 unsafe {
                     if let Some(vtbl) = (*self.taskbar).lpVtbl.as_ref() {
@@ -244,7 +202,7 @@ pub mod win32 {
     }
 
     /// 3. System Tray
-    pub fn setup_system_tray<W: HasWindowHandle>(window: &W, tooltip: &str) -> Result<(), &'static str> {
+    pub fn setup_system_tray(window: &slint::Window, tooltip: &str) -> Result<(), &'static str> {
         let hwnd = get_hwnd(window).ok_or("Invalid HWND")?;
         
         unsafe {
@@ -263,7 +221,7 @@ pub mod win32 {
             // Para cargar desde el ejecutable (id 1):
             // nid.hIcon = LoadIconW(GetModuleHandleW(ptr::null()), MAKEINTRESOURCEW(1));
             
-            let mut tooltip_wide: Vec<u16> = tooltip.encode_utf16().chain(std::iter::once(0)).collect();
+            let tooltip_wide: Vec<u16> = tooltip.encode_utf16().chain(std::iter::once(0)).collect();
             let len = tooltip_wide.len().min(128);
             nid.szTip[..len].copy_from_slice(&tooltip_wide[..len]);
 
@@ -273,7 +231,7 @@ pub mod win32 {
     }
 
     /// 4. Window Icon (inyectado)
-    pub fn set_window_icon_from_file<W: HasWindowHandle>(window: &W, path: &str) -> Result<(), &'static str> {
+    pub fn set_window_icon_from_file(window: &slint::Window, path: &str) -> Result<(), &'static str> {
         let hwnd = get_hwnd(window).ok_or("Invalid HWND")?;
         
         let path_wide: Vec<u16> = path.encode_utf16().chain(std::iter::once(0)).collect();
@@ -301,7 +259,7 @@ pub mod win32 {
     pub fn check_single_instance(app_id: &str, window_title: &str, payload: &str) -> bool {
         let app_id_wide: Vec<u16> = app_id.encode_utf16().chain(std::iter::once(0)).collect();
         unsafe {
-            let h_mutex = CreateMutexW(ptr::null(), 0, app_id_wide.as_ptr());
+            let _h_mutex = CreateMutexW(ptr::null(), 0, app_id_wide.as_ptr());
             if GetLastError() == ERROR_ALREADY_EXISTS {
                 let title_wide: Vec<u16> = window_title.encode_utf16().chain(std::iter::once(0)).collect();
                 let hwnd = FindWindowW(ptr::null(), title_wide.as_ptr());
@@ -321,7 +279,7 @@ pub mod win32 {
     }
 
     /// 6. Barra de título oscura
-    pub fn set_dark_title_bar<W: HasWindowHandle>(window: &W, dark: bool) {
+    pub fn set_dark_title_bar(window: &slint::Window, dark: bool) {
         if let Some(hwnd) = get_hwnd(window) {
             let enable: i32 = if dark { 1 } else { 0 };
             unsafe {
@@ -336,7 +294,7 @@ pub mod win32 {
     }
 
     /// 7. Global Hotkeys
-    pub fn register_global_hotkey<W: HasWindowHandle>(window: &W, id: i32, modifiers: u32, vk: u32) {
+    pub fn register_global_hotkey(window: &slint::Window, id: i32, modifiers: u32, vk: u32) {
         if let Some(hwnd) = get_hwnd(window) {
             unsafe {
                 RegisterHotKey(hwnd, id, modifiers, vk);

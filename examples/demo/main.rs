@@ -12,6 +12,9 @@ use slint_qt::{CuteMainWindow, CuteTableColumn, CuteTableItem, CuteTableRowData,
 fn main() -> Result<(), slint::PlatformError> {
     let ui = CuteMainWindow::new()?;
 
+    let tray = std::sync::Arc::new(std::sync::Mutex::new(slint_qt::cute_tray::CuteSystemTray::new()));
+    tray.lock().unwrap().show_message("SlintQT Demo", "¡Sistema de notificaciones nativo cargado!");
+
     let mut sys = System::new_all();
     sys.refresh_all();
     let cpu_name = sys.cpus().first().map(|c| c.brand()).unwrap_or("Unknown CPU");
@@ -25,9 +28,9 @@ fn main() -> Result<(), slint::PlatformError> {
 
     // FASE: Modelos de Datos Genéricos
     let initial_columns = vec![
-        CuteTableColumn { title: "Track ID".into(), width: 140.0 },
-        CuteTableColumn { title: "Type".into(), width: 120.0 },
-        CuteTableColumn { title: "Codec & Language".into(), width: 350.0 },
+        CuteTableColumn { title: "Track ID".into(), width: 140.0, data_index: 0 },
+        CuteTableColumn { title: "Type".into(), width: 120.0, data_index: 1 },
+        CuteTableColumn { title: "Codec & Language".into(), width: 350.0, data_index: 2 },
     ];
     let columns_model = Rc::new(VecModel::from(initial_columns));
     ui.set_table_columns(columns_model.clone().into());
@@ -46,6 +49,7 @@ fn main() -> Result<(), slint::PlatformError> {
 
     // Platform Bridge Logic: Detect OS, set theme, and hook Win32 native controls
     core::window::initialize_window(&ui);
+    slint_qt::cute_vibrancy::apply_native_blur(ui.window(), false);
 
     // ==========================================
     // FASE 1: Motor de CuteTable (Virtual Scrolling & Multihilo)

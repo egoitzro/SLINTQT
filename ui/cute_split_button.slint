@@ -1,0 +1,84 @@
+import { ThemeEngine, PlatformTheme } from "cute_theme.slint";
+
+export component CuteSplitButton {
+    in property <string> text: "Button";
+    in property <string> icon: "";
+    in property <bool> enabled: true;
+    out property <bool> has_focus;
+    
+    callback clicked();
+    callback arrow_clicked();
+
+    min-width: 80px;
+    min-height: 28px;
+    opacity: root.enabled ? 1.0 : 0.5;
+
+    rect := Rectangle {
+        border-radius: ThemeEngine.button_radius;
+        border-width: 1px;
+        border-color: ThemeEngine.button_border;
+        background: touch.pressed || arrow_touch.pressed ? ThemeEngine.button_pressed_bg : 
+                    (touch.has-hover || arrow_touch.has-hover) ? ThemeEngine.button_hover_bg : 
+                    @linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, ThemeEngine.button_bg 100%);
+
+        drop-shadow-color: ThemeEngine.current_theme == PlatformTheme.MacOS ? #00000020 : #00000010;
+        drop-shadow-offset-y: 1px;
+        drop-shadow-blur: ThemeEngine.current_theme == PlatformTheme.MacOS ? 2px : 1px;
+
+        HorizontalLayout {
+            padding-left: 8px;
+            padding-right: 4px;
+            
+            // Main Button area
+            Rectangle {
+                horizontal-stretch: 1;
+                touch := TouchArea {
+                    clicked => { if root.enabled { root.clicked(); } }
+                }
+                HorizontalLayout {
+                    alignment: center;
+                    spacing: 4px;
+                    if root.icon != "" : Text {
+                        text: root.icon;
+                        color: ThemeEngine.text_color;
+                        vertical-alignment: center;
+                        font-size: 14px;
+                    }
+                    if root.text != "" : Text {
+                        text: root.text;
+                        color: ThemeEngine.text_color;
+                        vertical-alignment: center;
+                        font-family: ThemeEngine.current_theme == PlatformTheme.MacOS ? "San Francisco" : "Segoe UI";
+                        font-size: 13px;
+                    }
+                }
+            }
+            
+            // Separator
+            VerticalLayout {
+                alignment: center;
+                padding: 4px;
+                Rectangle {
+                    width: 1px;
+                    height: 16px;
+                    background: ThemeEngine.border_subtle;
+                }
+            }
+            
+            // Arrow area
+            Rectangle {
+                width: 16px;
+                arrow_touch := TouchArea {
+                    clicked => { if root.enabled { root.arrow_clicked(); } }
+                }
+                Text {
+                    text: "▼";
+                    color: ThemeEngine.text_color;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
+                    font-size: 10px;
+                }
+            }
+        }
+    }
+}

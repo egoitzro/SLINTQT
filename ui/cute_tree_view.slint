@@ -11,7 +11,9 @@ export struct CuteTreeNode {
 
 export component CuteTreeView inherits Rectangle {
     in property <[CuteTreeNode]> model;
+    in property <int> selected_id: -1;
     callback toggle_node(int, bool);
+    callback item_clicked(int);
     
     border-radius: ThemeEngine.button_radius;
     border-width: 1px;
@@ -22,7 +24,7 @@ export component CuteTreeView inherits Rectangle {
     ListView {
         for node in root.model: Rectangle {
             height: 28px;
-            background: ta.pressed ? ThemeEngine.button_pressed_bg : (ta.has-hover ? ThemeEngine.button_hover_bg : transparent);
+            background: root.selected_id == node.id ? ThemeEngine.button_pressed_bg : (ta.pressed ? ThemeEngine.button_pressed_bg : (ta.has-hover ? ThemeEngine.button_hover_bg : transparent));
             
             HorizontalLayout {
                 padding-left: 8px + (node.level * 16px);
@@ -67,7 +69,9 @@ export component CuteTreeView inherits Rectangle {
             }
             
             ta := TouchArea {
-                
+                clicked => {
+                    root.item_clicked(node.id);
+                }
             }
         }
     }
