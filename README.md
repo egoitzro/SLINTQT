@@ -1,20 +1,20 @@
-# SlimCute Framework
+# SlintQT Framework
 
-**SlimCute** es una capa de infraestructura avanzada desarrollada sobre [Slint](https://slint.dev/). Su misión es superar a Qt en **fiabilidad, seguridad de memoria y facilidad de uso**, utilizando Rust como motor principal.
+**SlintQT** es una capa de infraestructura avanzada desarrollada sobre [Slint](https://slint.dev/). Su misión es superar a Qt en **fiabilidad, seguridad de memoria y facilidad de uso**, utilizando Rust como motor principal.
 
-El objetivo de SlimCute no es construir una aplicación final, sino proporcionar un motor y un sistema de abstracciones robusto para que otras aplicaciones (incluso motores heredados en C++) puedan gozar de interfaces modernas sin el riesgo de fugas de memoria o Data Races.
+El objetivo de SlintQT no es construir una aplicación final, sino proporcionar un motor y un sistema de abstracciones robusto para que otras aplicaciones (incluso motores heredados en C++) puedan gozar de interfaces modernas sin el riesgo de fugas de memoria o Data Races.
 
 ## 🛡️ Zero-Leak Architecture & Seguridad
 
-SlimCute elimina clases enteras de bugs comunes en Qt (C++) mediante el uso estricto del Ownership Model y Borrow Checker de Rust:
+SlintQT elimina clases enteras de bugs comunes en Qt (C++) mediante el uso estricto del Ownership Model y Borrow Checker de Rust:
 
-- **Sin `QObject` Dangling Pointers**: En C++, cuando un `QObject` padre es destruido, sus hijos se destruyen. Si una hebra o un evento intenta acceder a un hijo, ocurre un Segfault. En SlimCute, los modelos de interfaz (ej. `VecModel`) están envueltos en `Rc` (Reference Counting) en el hilo principal, garantizando que los datos visuales vivan exactamente el tiempo necesario.
-- **Smart Bindings (Thread-Safety)**: En Qt, emitir una señal desde un hilo secundario sin usar `Qt::QueuedConnection` causa corrupción de datos. SlimCute utiliza `slint::invoke_from_event_loop` y Mutexes (`Arc<Mutex<T>>`) en su capa FFI. Si un motor en C++ intenta inyectar datos desde un worker thread, el FFI de SlimCute clona los datos crudos, aísla la memoria insegura, y transfiere el Ownership (Send/Sync) de manera segura al hilo de renderizado.
+- **Sin `QObject` Dangling Pointers**: En C++, cuando un `QObject` padre es destruido, sus hijos se destruyen. Si una hebra o un evento intenta acceder a un hijo, ocurre un Segfault. En SlintQT, los modelos de interfaz (ej. `VecModel`) están envueltos en `Rc` (Reference Counting) en el hilo principal, garantizando que los datos visuales vivan exactamente el tiempo necesario.
+- **Smart Bindings (Thread-Safety)**: En Qt, emitir una señal desde un hilo secundario sin usar `Qt::QueuedConnection` causa corrupción de datos. SlintQT utiliza `slint::invoke_from_event_loop` y Mutexes (`Arc<Mutex<T>>`) en su capa FFI. Si un motor en C++ intenta inyectar datos desde un worker thread, el FFI de SlintQT clona los datos crudos, aísla la memoria insegura, y transfiere el Ownership (Send/Sync) de manera segura al hilo de renderizado.
 - **Abstracción de FFI Segura**: El programador final en Rust **jamás ve código `unsafe`**. El módulo `smart_bindings` actúa como un escudo: el desarrollador simplemente usa cierres (closures) limpios en Rust, mientras la capa inferior gestiona el ciclo de vida de los punteros C-ABI.
 
 ## ⚡ Performance Benchmarking & Renderizado Optimizado
 
-A diferencia del pipeline de QGraphicsView o QWidget que usa la CPU intensivamente para trazar primitivas, SlimCute aprovecha que Slint compila a código nativo fuertemente tipado:
+A diferencia del pipeline de QGraphicsView o QWidget que usa la CPU intensivamente para trazar primitivas, SlintQT aprovecha que Slint compila a código nativo fuertemente tipado:
 - **Zero-Copy y Lazy Evaluation**: Sugerimos minimizar el envío de Strings gigantes. El framework procesa celdas mediante vistas (`&str` convertidos en tiempo de inyección) y Slint sólo renderiza los elementos visibles (Virtual Scrolling implementado nativamente en el `ListView` de `CuteTable`).
 - **GPU Acceleration**: Todo el dibujo es derivado a Skia/FemtoVG. La CPU se minimiza asegurando que la UI sólo se actualiza a través de deltas.
 
@@ -31,7 +31,7 @@ Componentes "Caja Negra" diseñados para ser agnósticos de los datos, e inyecta
 - **`CuteContextMenu`**: Sistema de menús asíncronos basado en `PopupWindow`.
 
 ### 3. Smart Bindings FFI (`src/ffi/`)
-La capa de interoperabilidad. Expone un C-ABI estable que permite a proyectos como KDE o MKVToolNix conectarse a la interfaz sin reescribir su núcleo en C++, beneficiándose automáticamente de la barrera de seguridad de SlimCute.
+La capa de interoperabilidad. Expone un C-ABI estable que permite a proyectos como KDE o MKVToolNix conectarse a la interfaz sin reescribir su núcleo en C++, beneficiándose automáticamente de la barrera de seguridad de SlintQT.
 
 ## 🚀 Cómo ejecutar la Demo
 
@@ -51,7 +51,7 @@ La demo incluye:
 
 ## 📦 Uso como Librería
 
-Slint-qt compila de manera predeterminada como `rlib` para proyectos nativos en Rust y como `cdylib` para integraciones FFI.
+SlintQT compila de manera predeterminada como `rlib` para proyectos nativos en Rust y como `cdylib` para integraciones FFI.
 
 ```toml
 # En el Cargo.toml de tu proyecto final
